@@ -1,29 +1,22 @@
-import { randomUUID } from 'crypto'
+import { prisma } from '../lib/prisma'
 import { Search } from '../types/search'
 
-const searches: Search[] = []
-
-export function getAllSearches(): Search[] {
-  return searches
+export async function getAllSearches(): Promise<Search[]> {
+  return prisma.savedSearch.findMany({
+    orderBy: { createdAt: 'desc' },
+  })
 }
 
-export function createSearch(name: string): Search {
-  const search: Search = {
-    id: randomUUID(),
-    name,
-  }
-
-  searches.push(search)
-  return search
+export async function createSearch(name: string): Promise<Search> {
+  return prisma.savedSearch.create({
+    data: { name },
+  })
 }
 
-export function deleteSearch(id: string): boolean {
-  const index = searches.findIndex((search) => search.id === id)
+export async function deleteSearch(id: string): Promise<boolean> {
+  const result = await prisma.savedSearch.deleteMany({
+    where: { id },
+  })
 
-  if (index === -1) {
-    return false
-  }
-
-  searches.splice(index, 1)
-  return true
+  return result.count > 0
 }

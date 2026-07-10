@@ -7,11 +7,16 @@ import {
 
 const router = Router()
 
-router.get('/', (_req, res) => {
-  res.json(getAllSearches())
+router.get('/', async (_req, res) => {
+  try {
+    const searches = await getAllSearches()
+    res.json(searches)
+  } catch {
+    res.status(500).json({ error: 'Failed to load searches' })
+  }
 })
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { name } = req.body
 
   if (!name || typeof name !== 'string' || !name.trim()) {
@@ -19,19 +24,27 @@ router.post('/', (req, res) => {
     return
   }
 
-  const search = createSearch(name.trim())
-  res.status(201).json(search)
+  try {
+    const search = await createSearch(name.trim())
+    res.status(201).json(search)
+  } catch {
+    res.status(500).json({ error: 'Failed to create search' })
+  }
 })
 
-router.delete('/:id', (req, res) => {
-  const deleted = deleteSearch(req.params.id)
+router.delete('/:id', async (req, res) => {
+  try {
+    const deleted = await deleteSearch(req.params.id)
 
-  if (!deleted) {
-    res.status(404).json({ error: 'Search not found' })
-    return
+    if (!deleted) {
+      res.status(404).json({ error: 'Search not found' })
+      return
+    }
+
+    res.status(204).send()
+  } catch {
+    res.status(500).json({ error: 'Failed to delete search' })
   }
-
-  res.status(204).send()
 })
 
 export default router
