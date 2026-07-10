@@ -7,6 +7,12 @@ type SavedSearch = {
   name: string
 }
 
+type RunSearchResult = {
+  totalScraped: number
+  newListings: number
+  skippedDuplicates: number
+}
+
 function App() {
   const [backendStatus, setBackendStatus] = useState<
     'connected' | 'unavailable' | null
@@ -18,6 +24,9 @@ function App() {
   const [searchName, setSearchName] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [runningId, setRunningId] = useState<string | null>(null)
+  const [runResults, setRunResults] = useState<Record<string, RunSearchResult>>({})
+  const [runErrors, setRunErrors] = useState<Record<string, string>>({})
 
   async function loadSearches() {
     setIsLoadingSearches(true)
@@ -119,6 +128,42 @@ function App() {
     }
   }
 
+  async function handleRunSearch(id: string) {
+    setRunningId(id)
+
+    setRunResults((current) => {
+      const next = { ...current }
+      delete next[id]
+      return next
+    })
+
+    setRunErrors((current) => {
+      const next = { ...current }
+      delete next[id]
+      return next
+    })
+
+    try {
+      const response = await fetch(`${API_BASE}/searches/${id}/run`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to run search')
+      }
+
+      const data: RunSearchResult = await response.json()
+      setRunResults((current) => ({ ...current, [id]: data }))
+    } catch {
+      setRunErrors((current) => ({
+        ...current,
+        [id]: 'Could not run search. Please try again.',
+      }))
+    } finally {
+      setRunningId(null)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
@@ -170,17 +215,43 @@ function App() {
             {searches.map((search) => (
               <li
                 key={search.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
+                className="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
               >
-                <p className="font-medium text-slate-900">{search.name}</p>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteSearch(search.id)}
-                  disabled={deletingId === search.id}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {deletingId === search.id ? 'Deleting...' : 'Delete'}
-                </button>
+                <div className="flex items-center justify-between gap-4">
+                  <p className="font-medium text-slate-900">{search.name}</p>
+                  <div className="flex shrink-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRunSearch(search.id)}
+                      disabled={runningId === search.id}
+                      className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {runningId === search.id ? 'Running...' : 'Run Search'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSearch(search.id)}
+                      disabled={deletingId === search.id}
+                      className="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {deletingId === search.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+
+                {runResults[search.id] && (
+                  <p className="mt-3 text-sm text-slate-600">
+                    Total scraped: {runResults[search.id].totalScraped} · New
+                    listings: {runResults[search.id].newListings} · Skipped
+                    duplicates: {runResults[search.id].skippedDuplicates}
+                  </p>
+                )}
+
+                {runErrors[search.id] && (
+                  <p className="mt-3 text-sm text-red-600">
+                    {runErrors[search.id]}
+                  </p>
+                )}
               </li>
             ))}
           </ul>
