@@ -12,3 +12,14 @@ model SavedSearch {
   name      String
   createdAt DateTime @default(now())
 }
+
+model Listing {
+  id         String   @id @default(uuid()) @db.Uuid
+  source     String
+  listingUrl String   @unique
+  title      String?
+  price      String?
+  location   String?
+  imageUrl   String?
+  seenAt     DateTime @default(now())
+}
