@@ -7,6 +7,12 @@ export async function getAllSearches(): Promise<Search[]> {
   })
 }
 
+export async function getSearchById(id: string): Promise<Search | null> {
+  return prisma.savedSearch.findUnique({
+    where: { id },
+  })
+}
+
 export async function createSearch(name: string): Promise<Search> {
   return prisma.savedSearch.create({
     data: { name },

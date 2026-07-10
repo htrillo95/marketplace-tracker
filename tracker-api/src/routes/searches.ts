@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { runSavedSearch } from '../services/search-runner'
 import {
   createSearch,
   deleteSearch,
@@ -29,6 +30,27 @@ router.post('/', async (req, res) => {
     res.status(201).json(search)
   } catch {
     res.status(500).json({ error: 'Failed to create search' })
+  }
+})
+
+router.post('/:id/run', async (req, res) => {
+  try {
+    const result = await runSavedSearch(req.params.id)
+
+    if (!result) {
+      res.status(404).json({ error: 'Search not found' })
+      return
+    }
+
+    res.json(result)
+  } catch (error) {
+    console.error('Failed to run search:', error)
+
+    if (error instanceof Error && error.cause) {
+      console.error('Caused by:', error.cause)
+    }
+
+    res.status(500).json({ error: 'Failed to run search' })
   }
 })
 
