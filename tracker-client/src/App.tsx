@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+const API_BASE = 'http://localhost:3000'
+
 type SavedSearch = {
   id: string
   name: string
@@ -10,13 +12,37 @@ function App() {
     'connected' | 'unavailable' | null
   >(null)
   const [searches, setSearches] = useState<SavedSearch[]>([])
+  const [isLoadingSearches, setIsLoadingSearches] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchName, setSearchName] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  async function loadSearches() {
+    setIsLoadingSearches(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`${API_BASE}/searches`)
+
+      if (!response.ok) {
+        throw new Error('Failed to load searches')
+      }
+
+      const data: SavedSearch[] = await response.json()
+      setSearches(data)
+    } catch {
+      setError('Could not load searches. Is the backend running?')
+    } finally {
+      setIsLoadingSearches(false)
+    }
+  }
 
   useEffect(() => {
     async function checkHealth() {
       try {
-        const response = await fetch('http://localhost:3000/health')
+        const response = await fetch(`${API_BASE}/health`)
         const data = await response.json()
 
         if (data.status === 'ok') {
@@ -30,6 +56,7 @@ function App() {
     }
 
     checkHealth()
+    loadSearches()
   }, [])
 
   function openModal() {
@@ -42,17 +69,54 @@ function App() {
     setSearchName('')
   }
 
-  function handleSaveSearch(event: React.FormEvent) {
+  async function handleSaveSearch(event: React.FormEvent) {
     event.preventDefault()
 
     const trimmedName = searchName.trim()
     if (!trimmedName) return
 
-    setSearches((current) => [
-      ...current,
-      { id: crypto.randomUUID(), name: trimmedName },
-    ])
-    closeModal()
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`${API_BASE}/searches`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmedName }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save search')
+      }
+
+      closeModal()
+      await loadSearches()
+    } catch {
+      setError('Could not save search. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function handleDeleteSearch(id: string) {
+    setDeletingId(id)
+    setError(null)
+
+    try {
+      const response = await fetch(`${API_BASE}/searches/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete search')
+      }
+
+      await loadSearches()
+    } catch {
+      setError('Could not delete search. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -87,7 +151,17 @@ function App() {
           </p>
         )}
 
-        {searches.length === 0 ? (
+        {error && (
+          <p className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
+        {isLoadingSearches ? (
+          <div className="rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+            <p className="text-slate-500">Loading searches...</p>
+          </div>
+        ) : searches.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
             <p className="text-slate-500">No saved searches yet.</p>
           </div>
@@ -96,9 +170,17 @@ function App() {
             {searches.map((search) => (
               <li
                 key={search.id}
-                className="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
               >
                 <p className="font-medium text-slate-900">{search.name}</p>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteSearch(search.id)}
+                  disabled={deletingId === search.id}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {deletingId === search.id ? 'Deleting...' : 'Delete'}
+                </button>
               </li>
             ))}
           </ul>
@@ -134,7 +216,8 @@ function App() {
                   onChange={(event) => setSearchName(event.target.value)}
                   placeholder="e.g. Vintage cameras under $100"
                   autoFocus
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  disabled={isSaving}
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
@@ -142,16 +225,17 @@ function App() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+                  disabled={isSaving}
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={!searchName.trim()}
+                  disabled={!searchName.trim() || isSaving}
                   className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Save
+                  {isSaving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </form>
