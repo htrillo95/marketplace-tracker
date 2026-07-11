@@ -7,7 +7,12 @@ import {
   scrapeMarketplaceSearch,
 } from '../services/facebook-scraper'
 
-const SEARCH_QUERY = 'gsxr 1000'
+const POC_SEARCH = {
+  query: 'gsxr 1000',
+  location: 'philly',
+  radius: 65,
+  maxPrice: 6500,
+}
 
 function waitForEnter(message: string): Promise<void> {
   return new Promise((resolve) => {
@@ -40,9 +45,9 @@ function printListings(
 async function main() {
   console.log('Launching Chromium (visible window)...')
   console.log('This is a disposable feasibility test, not a production scraper.\n')
-  console.log(`Search URL: ${buildMarketplaceSearchUrl(SEARCH_QUERY)}\n`)
+  console.log(`Search URL: ${buildMarketplaceSearchUrl(POC_SEARCH)}\n`)
 
-  const listings = await scrapeMarketplaceSearch(SEARCH_QUERY, {
+  const listings = await scrapeMarketplaceSearch(POC_SEARCH, {
     headless: false,
     onPageReady: async (page) => {
       console.log(`Page title: ${await page.title()}\n`)

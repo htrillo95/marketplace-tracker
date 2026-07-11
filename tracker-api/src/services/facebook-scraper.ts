@@ -17,17 +17,31 @@ export class ScraperError extends Error {
   }
 }
 
-export function buildMarketplaceSearchUrl(query: string): string {
-  const location = process.env.MARKETPLACE_LOCATION ?? 'philly'
-  const radius = process.env.MARKETPLACE_RADIUS ?? '65'
-  const params = new URLSearchParams({
-    query,
+export type MarketplaceSearchParams = {
+  query: string
+  location: string
+  radius: number
+  maxPrice?: number | null
+}
+
+export function buildMarketplaceSearchUrl(
+  params: MarketplaceSearchParams,
+): string {
+  const locationSlug = params.location.toLowerCase().replace(/\s+/g, '')
+  const searchParams = new URLSearchParams({
+    query: params.query,
     exact: 'false',
-    radius,
+    radius: String(params.radius),
   })
 
-  return `https://www.facebook.com/marketplace/${location}/search/?${params.toString()}`
+  if (params.maxPrice) {
+    searchParams.set('maxPrice', String(params.maxPrice))
+  }
+
+  return `https://www.facebook.com/marketplace/${locationSlug}/search/?${searchParams.toString()}`
 }
+
+// TODO: Validate that scraped listing locations fall within the requested radius.
 
 function parseListingText(text: string): {
   title: string | null
@@ -129,7 +143,7 @@ async function collectListings(
 }
 
 export async function scrapeMarketplaceSearch(
-  query: string,
+  searchParams: MarketplaceSearchParams,
   options: ScrapeOptions = {},
 ): Promise<ListingInput[]> {
   const {
@@ -139,7 +153,7 @@ export async function scrapeMarketplaceSearch(
     onPageReady,
   } = options
 
-  const searchUrl = buildMarketplaceSearchUrl(query)
+  const searchUrl = buildMarketplaceSearchUrl(searchParams)
   const browser = await chromium.launch({ headless })
   const page = await browser.newPage()
 
@@ -163,9 +177,10 @@ export async function scrapeMarketplaceSearch(
     // executes while collectListings() is still using the page.
     return await collectListings(page, maxListings)
   } catch (error) {
-    throw new ScraperError(`Failed to scrape Marketplace for query "${query}"`, {
-      cause: error,
-    })
+    throw new ScraperError(
+      `Failed to scrape Marketplace for query "${searchParams.query}"`,
+      { cause: error },
+    )
   } finally {
     await browser.close()
   }

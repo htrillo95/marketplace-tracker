@@ -1,5 +1,6 @@
 import express from 'express'
 import healthRouter from './routes/health'
+import listingsRouter from './routes/listings'
 import searchesRouter from './routes/searches'
 
 const app = express()
@@ -20,5 +21,6 @@ app.use((req, res, next) => {
 app.use(express.json())
 app.use('/health', healthRouter)
 app.use('/searches', searchesRouter)
+app.use('/listings', listingsRouter)
 
 export default app

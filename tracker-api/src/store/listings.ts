@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma'
+import { Listing } from '../types/listing'
 
 export type ListingInput = {
   source: string
@@ -9,20 +10,43 @@ export type ListingInput = {
   imageUrl: string | null
 }
 
+export async function getAllListings(): Promise<Listing[]> {
+  return prisma.listing.findMany({
+    orderBy: { seenAt: 'desc' },
+  })
+}
+
 export async function saveNewListings(
   listings: ListingInput[],
-): Promise<{ saved: number; skipped: number }> {
-  if (listings.length === 0) {
-    return { saved: 0, skipped: 0 }
+  savedSearchId?: string,
+): Promise<{ saved: number; skipped: number; newListingIds: string[] }> {
+  const newListingIds: string[] = []
+  let saved = 0
+  let skipped = 0
+
+  for (const listing of listings) {
+    try {
+      const created = await prisma.listing.create({
+        data: {
+          ...listing,
+          savedSearchId: savedSearchId ?? null,
+        },
+      })
+      newListingIds.push(created.id)
+      saved++
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'P2002'
+      ) {
+        skipped++
+      } else {
+        throw error
+      }
+    }
   }
 
-  const result = await prisma.listing.createMany({
-    data: listings,
-    skipDuplicates: true,
-  })
-
-  return {
-    saved: result.count,
-    skipped: listings.length - result.count,
-  }
+  return { saved, skipped, newListingIds }
 }

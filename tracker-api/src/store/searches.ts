@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma'
-import { Search } from '../types/search'
+import { CreateSearchInput, Search, UpdateSearchInput } from '../types/search'
 
 export async function getAllSearches(): Promise<Search[]> {
   return prisma.savedSearch.findMany({
@@ -13,9 +13,74 @@ export async function getSearchById(id: string): Promise<Search | null> {
   })
 }
 
-export async function createSearch(name: string): Promise<Search> {
+const ALLOWED_RESULTS_PER_SEARCH = [5, 10, 20, 50]
+
+export async function createSearch(input: CreateSearchInput): Promise<Search> {
+  const resultsPerSearch = input.resultsPerSearch ?? 10
+
+  if (!ALLOWED_RESULTS_PER_SEARCH.includes(resultsPerSearch)) {
+    throw new Error('Invalid resultsPerSearch')
+  }
+
   return prisma.savedSearch.create({
-    data: { name },
+    data: {
+      name: input.name,
+      query: input.query,
+      maxPrice: input.maxPrice ?? null,
+      location: input.location,
+      radius: input.radius,
+      resultsPerSearch,
+    },
+  })
+}
+
+export async function updateSearch(
+  id: string,
+  input: UpdateSearchInput,
+): Promise<Search | null> {
+  const existing = await getSearchById(id)
+  if (!existing) return null
+
+  if (
+    input.resultsPerSearch !== undefined &&
+    !ALLOWED_RESULTS_PER_SEARCH.includes(input.resultsPerSearch)
+  ) {
+    throw new Error('Invalid resultsPerSearch')
+  }
+
+  return prisma.savedSearch.update({
+    where: { id },
+    data: {
+      ...(input.name !== undefined && { name: input.name.trim() }),
+      ...(input.query !== undefined && { query: input.query.trim() }),
+      ...(input.location !== undefined && { location: input.location.trim() }),
+      ...(input.radius !== undefined && { radius: input.radius }),
+      ...(input.maxPrice !== undefined && { maxPrice: input.maxPrice }),
+      ...(input.resultsPerSearch !== undefined && {
+        resultsPerSearch: input.resultsPerSearch,
+      }),
+    },
+  })
+}
+
+export async function updateSearchAfterRun(
+  id: string,
+  stats: {
+    newListings: number
+    totalScraped: number
+    skippedDuplicates: number
+    newListingIds: string[]
+  },
+): Promise<void> {
+  await prisma.savedSearch.update({
+    where: { id },
+    data: {
+      lastCheckedAt: new Date(),
+      lastNewListings: stats.newListings,
+      lastTotalScraped: stats.totalScraped,
+      lastSkippedDuplicates: stats.skippedDuplicates,
+      lastRunNewListingIds: stats.newListingIds,
+    },
   })
 }
 
