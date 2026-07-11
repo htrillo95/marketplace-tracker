@@ -10,25 +10,13 @@ type Props = {
 
 export function WatchRowMenu({ search }: Props) {
   const navigate = useNavigate()
-  const { removeSearch, checkMarketplace, runningId } = useAppData()
+  const { removeSearch } = useAppData()
   const [isOpen, setIsOpen] = useState(false)
-  const [showEdit, setShowEdit] = useState(false)
+  const [dialogMode, setDialogMode] = useState<'edit' | 'rename' | null>(null)
   const [isRemoving, setIsRemoving] = useState(false)
 
-  const isChecking = runningId === search.id
-
-  async function handleCheckNow() {
-    setIsOpen(false)
-    try {
-      await checkMarketplace(search.id)
-      navigate(`/search/${search.id}`)
-    } catch {
-      // error shown via context
-    }
-  }
-
   async function handleDelete() {
-    if (!window.confirm(`Stop watching "${search.name}"?`)) return
+    if (!window.confirm(`Delete "${search.name}"?`)) return
     setIsRemoving(true)
     setIsOpen(false)
     try {
@@ -39,15 +27,20 @@ export function WatchRowMenu({ search }: Props) {
     }
   }
 
+  function openDialog(mode: 'edit' | 'rename') {
+    setIsOpen(false)
+    setDialogMode(mode)
+  }
+
   return (
     <>
       <div className="relative shrink-0">
         <button
           type="button"
           onClick={() => setIsOpen((v) => !v)}
-          disabled={isRemoving || isChecking}
+          disabled={isRemoving}
           aria-label={`Options for ${search.name}`}
-          className="px-2 py-1 text-stone-400 hover:text-stone-700 disabled:opacity-40"
+          className="px-1.5 py-1 text-sm text-stone-400 hover:text-stone-600 disabled:opacity-40"
         >
           ···
         </button>
@@ -60,42 +53,41 @@ export function WatchRowMenu({ search }: Props) {
               aria-label="Close menu"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute right-0 z-20 mt-1 min-w-44 rounded-lg bg-white py-1 shadow-lg shadow-stone-900/10">
-              <button
-                type="button"
-                onClick={() => void handleCheckNow()}
-                disabled={isChecking}
-                className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-50 disabled:opacity-50"
-              >
-                {isChecking ? 'Checking…' : 'Check Marketplace now'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false)
-                  setShowEdit(true)
-                }}
-                className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
-              >
-                Edit settings
-              </button>
+            <div className="absolute right-0 z-20 mt-1 min-w-36 rounded-lg border border-stone-200/80 bg-white py-1 shadow-sm shadow-stone-900/5">
               <button
                 type="button"
                 onClick={() => void handleDelete()}
                 className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-stone-50"
               >
-                Stop watching
+                Delete
+              </button>
+              <button
+                type="button"
+                onClick={() => openDialog('rename')}
+                className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+              >
+                Rename
+              </button>
+              <button
+                type="button"
+                onClick={() => openDialog('edit')}
+                className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+              >
+                Edit search
               </button>
             </div>
           </>
         )}
       </div>
 
-      <WatchSettingsDialog
-        search={search}
-        isOpen={showEdit}
-        onClose={() => setShowEdit(false)}
-      />
+      {dialogMode && (
+        <WatchSettingsDialog
+          search={search}
+          mode={dialogMode}
+          isOpen
+          onClose={() => setDialogMode(null)}
+        />
+      )}
     </>
   )
 }

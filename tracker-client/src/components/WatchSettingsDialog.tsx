@@ -19,18 +19,17 @@ type Props = {
   search: SavedSearch
   isOpen: boolean
   onClose: () => void
+  mode: 'edit' | 'rename'
 }
 
-export function WatchSettingsDialog({ search, isOpen, onClose }: Props) {
+export function WatchSettingsDialog({ search, isOpen, onClose, mode }: Props) {
   const { updateSearch } = useAppData()
   const [form, setForm] = useState(() => searchToForm(search))
   const [isSaving, setIsSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       setForm(searchToForm(search))
-      setSaved(false)
     }
   }, [isOpen, search])
 
@@ -38,7 +37,6 @@ export function WatchSettingsDialog({ search, isOpen, onClose }: Props) {
 
   function updateField(field: keyof NewSearchForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
-    setSaved(false)
   }
 
   async function handleSave(event: React.FormEvent) {
@@ -46,12 +44,13 @@ export function WatchSettingsDialog({ search, isOpen, onClose }: Props) {
     setIsSaving(true)
     try {
       await updateSearch(search.id, form)
-      setSaved(true)
       onClose()
     } finally {
       setIsSaving(false)
     }
   }
+
+  const isRename = mode === 'rename'
 
   return (
     <div
@@ -62,82 +61,89 @@ export function WatchSettingsDialog({ search, isOpen, onClose }: Props) {
         className="max-h-[90vh] w-full max-w-md overflow-y-auto bg-[#f7f6f3] px-6 py-6 sm:rounded-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-medium text-stone-900">Settings</h2>
+        <h2 className="text-lg font-medium text-stone-900">
+          {isRename ? 'Rename' : 'Edit'}
+        </h2>
         <p className="mt-1 text-sm text-stone-500">
-          Update what you&apos;re watching.
+          {isRename
+            ? 'Change how this watch appears on your list.'
+            : 'Update location, price, and what you are looking for.'}
         </p>
 
         <form onSubmit={handleSave} className="mt-6 space-y-5">
-          <Field label="Name (what you call this watch)">
-            <input
-              value={form.name}
-              onChange={(e) => updateField('name', e.target.value)}
-              className={inputClass}
-            />
-          </Field>
-
-          <Field label="Looking for">
-            <input
-              value={form.query}
-              onChange={(e) => updateField('query', e.target.value)}
-              required
-              className={inputClass}
-            />
-          </Field>
-
-          <Field label="Location">
-            <input
-              value={form.location}
-              onChange={(e) => updateField('location', e.target.value)}
-              required
-              className={inputClass}
-            />
-          </Field>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Radius (miles)">
+          {isRename ? (
+            <Field label="Name">
               <input
-                type="number"
-                value={form.radius}
-                onChange={(e) => updateField('radius', e.target.value)}
-                required
-                min={1}
+                value={form.name}
+                onChange={(e) => updateField('name', e.target.value)}
+                autoFocus
                 className={inputClass}
               />
             </Field>
+          ) : (
+            <>
+              <Field label="Looking for">
+                <input
+                  value={form.query}
+                  onChange={(e) => updateField('query', e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </Field>
 
-            <Field label="Max price (optional)">
-              <input
-                type="number"
-                value={form.maxPrice}
-                onChange={(e) => updateField('maxPrice', e.target.value)}
-                placeholder="No limit"
-                min={1}
-                className={inputClass}
-              />
-            </Field>
-          </div>
+              <Field label="Location">
+                <input
+                  value={form.location}
+                  onChange={(e) => updateField('location', e.target.value)}
+                  required
+                  className={inputClass}
+                />
+              </Field>
 
-          <Field label="Listings to check">
-            <div className="flex flex-wrap gap-2">
-              {RESULTS_OPTIONS.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => updateField('resultsPerSearch', value)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${
-                    form.resultsPerSearch === value
-                      ? 'bg-stone-900 text-white'
-                      : 'text-stone-600 hover:bg-stone-100'
-                  }`}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
-          </Field>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Radius (miles)">
+                  <input
+                    type="number"
+                    value={form.radius}
+                    onChange={(e) => updateField('radius', e.target.value)}
+                    required
+                    min={1}
+                    className={inputClass}
+                  />
+                </Field>
 
-          {saved && <p className="text-sm text-stone-500">Saved.</p>}
+                <Field label="Max price (optional)">
+                  <input
+                    type="number"
+                    value={form.maxPrice}
+                    onChange={(e) => updateField('maxPrice', e.target.value)}
+                    placeholder="No limit"
+                    min={1}
+                    className={inputClass}
+                  />
+                </Field>
+              </div>
+
+              <Field label="Listings to check">
+                <div className="flex flex-wrap gap-2">
+                  {RESULTS_OPTIONS.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateField('resultsPerSearch', value)}
+                      className={`rounded-full px-3 py-1.5 text-sm ${
+                        form.resultsPerSearch === value
+                          ? 'bg-stone-900 text-white'
+                          : 'text-stone-600 hover:bg-stone-100'
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            </>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button

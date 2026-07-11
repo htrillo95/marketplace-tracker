@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppData } from '../context/AppDataContext'
-import { HELPERS } from '../lib/copy'
 import type { NewSearchForm } from '../types'
+import { getGreeting } from '../lib/format'
 
-const EXAMPLES = [
-  'PlayStation 5',
-  'Floor lamp',
+const SUGGESTIONS = [
+  'PS5',
   'Road bike',
+  'Floor lamp',
   'Canon camera',
-  'Couch',
-  'Stroller',
+  'Patio furniture',
+  'Pokemon cards',
 ]
 
 const RESULTS_OPTIONS = ['5', '10', '20', '50'] as const
@@ -24,10 +24,10 @@ const defaultDetails = {
 }
 
 type Props = {
-  compact?: boolean
+  isFirstVisit?: boolean
 }
 
-export function StartWatchingFlow({ compact = false }: Props) {
+export function WatchSearchHero({ isFirstVisit = false }: Props) {
   const navigate = useNavigate()
   const { startWatching } = useAppData()
 
@@ -37,8 +37,8 @@ export function StartWatchingFlow({ compact = false }: Props) {
   const [phase, setPhase] = useState<'idle' | 'setting-up'>('idle')
   const [error, setError] = useState<string | null>(null)
 
-  function revealDetails(nextQuery: string) {
-    const trimmed = nextQuery.trim()
+  function revealDetails() {
+    const trimmed = query.trim()
     if (!trimmed) return
     setQuery(trimmed)
     setShowDetails(true)
@@ -48,7 +48,7 @@ export function StartWatchingFlow({ compact = false }: Props) {
   function handleQueryKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
       event.preventDefault()
-      revealDetails(query)
+      revealDetails()
     }
   }
 
@@ -74,7 +74,6 @@ export function StartWatchingFlow({ compact = false }: Props) {
 
     try {
       const search = await startWatching(form)
-
       navigate(`/search/${search.id}`, {
         state: {
           justCreated: true,
@@ -89,68 +88,56 @@ export function StartWatchingFlow({ compact = false }: Props) {
   }
 
   return (
-    <section className={compact ? 'space-y-4' : 'space-y-8'}>
+    <section className="space-y-5">
       <div>
-        <h2
-          className={`font-medium text-stone-900 ${
-            compact ? 'text-base' : 'text-2xl tracking-tight'
-          }`}
+        <p className="text-lg text-stone-600">{getGreeting()}.</p>
+        <label
+          htmlFor="watch-search"
+          className="mt-4 block text-sm font-medium text-stone-900"
         >
-          {compact ? 'Watch something else' : 'Looking for something?'}
-        </h2>
-
-        {!compact && (
-          <>
-            <p className="mt-3 max-w-xl text-base leading-relaxed text-stone-600">
-              Tell Marketplace Tracker what you&apos;re trying to buy.
-            </p>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-500">
-              We&apos;ll keep checking Facebook Marketplace and let you know when
-              something new appears.
-            </p>
-          </>
-        )}
-
-        <div className="mt-5">
-          <label htmlFor="looking-for" className="sr-only">
-            What are you looking for?
-          </label>
-          <input
-            id="looking-for"
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleQueryKeyDown}
-            placeholder="Try PlayStation 5, floor lamp, couch…"
-            className="w-full border-b border-stone-300 bg-transparent py-3 text-lg text-stone-900 placeholder:text-stone-400 focus:border-stone-800 focus:outline-none"
-            autoComplete="off"
-          />
-        </div>
-
-        {!showDetails && (
-          <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
-            {EXAMPLES.map((example) => (
-              <button
-                key={example}
-                type="button"
-                onClick={() => revealDetails(example)}
-                className="text-sm text-stone-500 transition-colors hover:text-stone-900"
-              >
-                {example}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {!showDetails && !compact && (
-          <p className="mt-8 text-xs text-stone-400">{HELPERS.notFacebook}</p>
-        )}
+          What should Scout watch?
+        </label>
+        <input
+          id="watch-search"
+          type="search"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            if (showDetails && !e.target.value.trim()) setShowDetails(false)
+          }}
+          onKeyDown={handleQueryKeyDown}
+          placeholder="Search Marketplace…"
+          className="mt-2 w-full rounded-[10px] bg-stone-200/50 px-3.5 py-2.5 text-base text-stone-900 placeholder:text-stone-400 focus:bg-stone-200/70 focus:outline-none"
+          autoComplete="off"
+          enterKeyHint="search"
+        />
       </div>
 
+      {!showDetails && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+          {SUGGESTIONS.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => setQuery(suggestion)}
+              className="text-sm text-stone-400 transition-colors hover:text-stone-700"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isFirstVisit && !showDetails && (
+        <p className="text-sm text-stone-500">
+          Start watching something and we&apos;ll check Marketplace for you.
+        </p>
+      )}
+
       {showDetails && (
-        <form onSubmit={handleStartWatching} className="space-y-6">
+        <form onSubmit={handleStartWatching} className="space-y-5 border-t border-stone-200/60 pt-5">
           <p className="text-sm text-stone-600">
-            Looking for{' '}
+            Watching for{' '}
             <span className="font-medium text-stone-900">{query.trim()}</span>
           </p>
 
@@ -164,8 +151,8 @@ export function StartWatchingFlow({ compact = false }: Props) {
             />
           </Field>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="How far to search">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Radius">
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -180,7 +167,7 @@ export function StartWatchingFlow({ compact = false }: Props) {
               </div>
             </Field>
 
-            <Field label="Maximum price (optional)">
+            <Field label="Max price (optional)">
               <div className="flex items-center gap-2">
                 <span className="shrink-0 text-sm text-stone-500">$</span>
                 <input
@@ -195,14 +182,14 @@ export function StartWatchingFlow({ compact = false }: Props) {
             </Field>
           </div>
 
-          <Field label="How many listings to check">
+          <Field label="Listings to check">
             <div className="flex flex-wrap gap-2">
               {RESULTS_OPTIONS.map((value) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => updateDetail('resultsPerSearch', value)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm transition-colors ${
+                  className={`rounded-full px-3 py-1 text-sm ${
                     details.resultsPerSearch === value
                       ? 'bg-stone-900 text-white'
                       : 'text-stone-600 hover:bg-stone-100'
@@ -218,7 +205,7 @@ export function StartWatchingFlow({ compact = false }: Props) {
             <input
               value={details.name}
               onChange={(e) => updateDetail('name', e.target.value)}
-              placeholder={query.trim() || 'Living room lamp'}
+              placeholder={query.trim()}
               className={inputClass}
             />
           </Field>
@@ -228,7 +215,7 @@ export function StartWatchingFlow({ compact = false }: Props) {
           <button
             type="submit"
             disabled={phase === 'setting-up'}
-            className="rounded-lg bg-stone-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-60"
+            className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-60"
           >
             {phase === 'setting-up' ? 'Getting things ready…' : 'Start Watching'}
           </button>
@@ -248,10 +235,10 @@ function Field({
   return (
     <label className="block">
       <span className="text-sm text-stone-600">{label}</span>
-      <div className="mt-1.5">{children}</div>
+      <div className="mt-1">{children}</div>
     </label>
   )
 }
 
 const inputClass =
-  'w-full border-b border-stone-200 bg-transparent py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-800 focus:outline-none'
+  'w-full rounded-[8px] bg-stone-200/40 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:bg-stone-200/60 focus:outline-none'

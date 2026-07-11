@@ -9,7 +9,10 @@ import {
   getWorkspaceResultSummary,
   HELPERS,
 } from '../lib/copy'
-import { formatWatchDetails } from '../lib/format'
+import {
+  formatCheckedAt,
+  formatWatchLocationLines,
+} from '../lib/format'
 import { partitionListingsForSearch } from '../lib/listings'
 
 type LocationState = {
@@ -96,10 +99,15 @@ export function SearchWorkspacePage() {
 
   const checking = isChecking || runningId === search.id
   const newCount = newListings.length
+  const locationLines = formatWatchLocationLines(search)
+
+  const statusMessage = checking
+    ? null
+    : checkCompleteMessage ?? getWorkspaceResultSummary(newCount)
 
   return (
     <div className="space-y-10">
-      <header className="space-y-4">
+      <header className="space-y-5">
         <div className="flex items-start justify-between gap-4">
           <Link to="/" className="text-sm text-stone-500 hover:text-stone-800">
             ← Home
@@ -109,8 +117,8 @@ export function SearchWorkspacePage() {
 
         {locationState?.justCreated && (
           <p className="text-sm text-stone-600">
-            You&apos;re now watching &ldquo;{locationState.displayName ?? search.name}
-            &rdquo;. We&apos;ll check Marketplace for you.
+            Scout is now watching &ldquo;{locationState.displayName ?? search.name}
+            &rdquo; for you.
           </p>
         )}
 
@@ -118,21 +126,17 @@ export function SearchWorkspacePage() {
           <h1 className="text-3xl font-semibold tracking-tight text-stone-900">
             {search.name}
           </h1>
-          <p className="mt-2 text-sm text-stone-500">
-            Watching: {formatWatchDetails(search)}
+          <div className="mt-3 space-y-0.5 text-sm text-stone-500">
+            {locationLines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-stone-400">
+            {formatCheckedAt(search.lastCheckedAt)}
           </p>
-          <p className="mt-4 text-base text-stone-700">
-            {checking ? (
-              <CheckingProgress />
-            ) : checkCompleteMessage ? (
-              checkCompleteMessage
-            ) : (
-              getWorkspaceResultSummary(newCount)
-            )}
-          </p>
-          {!checking && newCount === 0 && !checkCompleteMessage && (
-            <p className="mt-2 text-sm text-stone-500">You&apos;re caught up.</p>
-          )}
+          <div className="mt-4 text-base text-stone-700">
+            {checking ? <CheckingProgress /> : statusMessage}
+          </div>
         </div>
 
         {!checking && (
@@ -157,12 +161,6 @@ export function SearchWorkspacePage() {
             ))}
           </ul>
         </section>
-      )}
-
-      {newCount === 0 && !checking && (
-        <p className="text-sm text-stone-500">
-          No new listings right now. Check back later, or run a check above.
-        </p>
       )}
 
       {previousListings.length > 0 && (

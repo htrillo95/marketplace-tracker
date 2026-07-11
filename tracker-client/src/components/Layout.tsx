@@ -10,7 +10,7 @@ export function Layout() {
         <div className="mx-auto max-w-2xl px-6 py-6">
           <Link to="/" className="block">
             <p className="text-base font-semibold tracking-tight text-stone-900">
-              Marketplace Tracker
+              Scout
             </p>
             <p className="mt-1 text-sm text-stone-500">
               We&apos;ll tell you when Marketplace changes.

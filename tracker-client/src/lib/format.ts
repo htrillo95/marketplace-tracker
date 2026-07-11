@@ -20,7 +20,17 @@ export function formatRelativeTime(value: string | null): string {
 
 export function formatCheckedAt(value: string | null): string {
   if (!value) return "Hasn't been checked yet"
-  return `Last checked ${formatRelativeTime(value)}`
+  return `Checked ${formatRelativeTime(value)}`
+}
+
+export function formatWatchLocationLines(search: {
+  location: string
+  radius: number
+  maxPrice: number | null
+}): string[] {
+  const lines = [search.location, `${search.radius} miles`]
+  if (search.maxPrice) lines.push(`Under ${formatMaxPrice(search.maxPrice)}`)
+  return lines
 }
 
 export function formatSeenDate(seenAt: string): string {

@@ -11,21 +11,14 @@ export const CHECK_PROGRESS_MESSAGES = [
   'Comparing against previous results…',
 ] as const
 
-export function getHomeSummary(
-  totalNew: number,
-  watchesWithNew: number,
-): string {
-  if (totalNew > 0) {
-    const watchPart =
-      watchesWithNew === 1
-        ? '1 watch has new listings'
-        : `${watchesWithNew} watches have new listings`
-    const listingPart =
-      totalNew === 1 ? '1 new listing' : `${totalNew} new listings`
-    return `${watchPart} — ${listingPart} waiting.`
+export function getHomeStatus(watchesWithNew: number): string {
+  if (watchesWithNew > 0) {
+    return watchesWithNew === 1
+      ? '1 search has new listings.'
+      : `${watchesWithNew} searches have new listings.`
   }
 
-  return 'Nothing new since your last visit.'
+  return "Everything you're watching is up to date."
 }
 
 export function getWatchStatusLabel(
@@ -36,18 +29,27 @@ export function getWatchStatusLabel(
   if (count > 0) {
     return count === 1 ? '1 new listing' : `${count} new listings`
   }
+  return 'No new listings'
+}
+
+export function getCompactWatchStatus(
+  count: number,
+  isChecking: boolean,
+): string {
+  if (isChecking) return 'Checking…'
+  if (count > 0) return `${count} new`
   return 'Up to date'
 }
 
 export function getWorkspaceResultSummary(newCount: number): string {
-  if (newCount === 0) return 'Nothing new since your last check.'
+  if (newCount === 0) return 'No new listings since your last check.'
   return newCount === 1
     ? '1 new listing since your last check'
     : `${newCount} new listings since your last check`
 }
 
 export function getCheckCompleteMessage(newCount: number): string {
-  if (newCount === 0) return "You're caught up."
+  if (newCount === 0) return 'No new listings.'
   return newCount === 1
     ? 'Found 1 new listing.'
     : `Found ${newCount} new listings.`
