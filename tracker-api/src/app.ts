@@ -1,9 +1,11 @@
+console.log('4. app.ts loading')
 import express from 'express'
 import healthRouter from './routes/health'
 import listingsRouter from './routes/listings'
 import searchesRouter from './routes/searches'
 
 const app = express()
+console.log('5. express created')
 
 function resolveAllowedOrigin(requestOrigin: string | undefined): string | null {
   const configured = process.env.CORS_ORIGINS?.trim()
@@ -55,5 +57,7 @@ app.use(express.json())
 app.use('/health', healthRouter)
 app.use('/searches', searchesRouter)
 app.use('/listings', listingsRouter)
+
+console.log('6. routes registered')
 
 export default app

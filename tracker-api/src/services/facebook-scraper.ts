@@ -1,3 +1,4 @@
+console.log('9. facebook-scraper module imported')
 import { chromium, type Page } from 'playwright'
 import { ListingInput } from '../store/listings'
 
