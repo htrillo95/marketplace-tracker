@@ -5,10 +5,43 @@ import searchesRouter from './routes/searches'
 
 const app = express()
 
+function resolveAllowedOrigin(requestOrigin: string | undefined): string | null {
+  const configured = process.env.CORS_ORIGINS?.trim()
+
+  // Local default: allow any origin (same as before).
+  if (!configured) {
+    return '*'
+  }
+
+  const allowed = configured
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+  if (!requestOrigin) {
+    return allowed[0] ?? null
+  }
+
+  if (allowed.includes(requestOrigin)) {
+    return requestOrigin
+  }
+
+  return null
+}
+
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+  const allowedOrigin = resolveAllowedOrigin(req.headers.origin)
+
+  if (allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
+  }
+
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PATCH, DELETE, OPTIONS',
+  )
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Vary', 'Origin')
 
   if (req.method === 'OPTIONS') {
     res.sendStatus(204)
