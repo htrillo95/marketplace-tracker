@@ -1,5 +1,6 @@
 import express from 'express'
 import connectionsRouter from './routes/connections'
+import debugRouter from './routes/debug'
 import healthRouter from './routes/health'
 import listingsRouter from './routes/listings'
 import searchesRouter from './routes/searches'
@@ -57,5 +58,6 @@ app.use('/health', healthRouter)
 app.use('/searches', searchesRouter)
 app.use('/listings', listingsRouter)
 app.use('/connections', connectionsRouter)
+app.use('/debug', debugRouter)
 
 export default app
