@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchConnections } from '../api'
 import { ProviderConnectionCard } from '../components/connections/ProviderConnectionCard'
+import { SectionLabel } from '../components/SectionLabel'
 import type { ProviderConnection } from '../types'
 
 export function SettingsPage() {
@@ -19,7 +20,7 @@ export function SettingsPage() {
         const data = await fetchConnections()
         if (!cancelled) setConnections(data)
       } catch {
-        if (!cancelled) setError('Could not load connection settings.')
+        if (!cancelled) setError('Could not load connections.')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -40,51 +41,39 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <Link
           to="/"
-          className="text-sm text-stone-500 transition hover:text-stone-800"
+          className="inline-flex min-h-11 items-center text-sm text-stone-500 active:text-stone-800"
         >
-          ← Back to Scout
+          ← Home
         </Link>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-stone-900">
+        <h1 className="mt-2 text-[22px] font-semibold tracking-tight text-stone-900">
           Settings
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-stone-500">
-          Manage how Scout connects to marketplaces. Facebook Marketplace is
-          available first; more providers can follow the same pattern later.
-        </p>
+        <p className="mt-1 text-sm text-stone-500">Connected marketplaces</p>
       </div>
 
-      <div>
-        <h2 className="text-xs font-medium uppercase tracking-wide text-stone-400">
-          Connected services
-        </h2>
+      <div className="space-y-3">
+        <SectionLabel>Providers</SectionLabel>
 
-        <div className="mt-4 space-y-4">
-          {loading && (
-            <p className="text-sm text-stone-500">Loading connections…</p>
-          )}
+        {loading && <p className="text-sm text-stone-500">Loading…</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+        {!loading &&
+          !error &&
+          connections.map((connection) => (
+            <ProviderConnectionCard
+              key={connection.providerId}
+              connection={connection}
+              onUpdated={handleUpdated}
+            />
+          ))}
 
-          {!loading &&
-            !error &&
-            connections.map((connection) => (
-              <ProviderConnectionCard
-                key={connection.providerId}
-                connection={connection}
-                onUpdated={handleUpdated}
-              />
-            ))}
-
-          {!loading && !error && connections.length === 0 && (
-            <p className="text-sm text-stone-500">
-              No marketplace connections are configured yet.
-            </p>
-          )}
-        </div>
+        {!loading && !error && connections.length === 0 && (
+          <p className="text-sm text-stone-500">No providers yet.</p>
+        )}
       </div>
     </div>
   )

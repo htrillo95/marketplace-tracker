@@ -25,11 +25,12 @@ export function buildRecentActivity(searches: SavedSearch[]): ActivityEvent[] {
       })
 
       if (search.lastNewListings > 0) {
-        const label =
-          search.lastNewListings === 1 ? 'listing' : 'listings'
         events.push({
           id: `${search.id}-found`,
-          message: `Found ${search.lastNewListings} new ${search.name} ${label}`,
+          message:
+            search.lastNewListings === 1
+              ? `1 new listing · ${search.name}`
+              : `${search.lastNewListings} new listings · ${search.name}`,
           timestamp: search.lastCheckedAt,
         })
       }

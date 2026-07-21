@@ -40,7 +40,7 @@ export function WatchRowMenu({ search }: Props) {
           onClick={() => setIsOpen((v) => !v)}
           disabled={isRemoving}
           aria-label={`Options for ${search.name}`}
-          className="px-1.5 py-1 text-sm text-stone-400 hover:text-stone-600 disabled:opacity-40"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center text-sm text-stone-400 active:text-stone-700 disabled:opacity-40"
         >
           ···
         </button>
@@ -53,25 +53,25 @@ export function WatchRowMenu({ search }: Props) {
               aria-label="Close menu"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute right-0 z-20 mt-1 min-w-36 rounded-lg border border-stone-200/80 bg-white py-1 shadow-sm shadow-stone-900/5">
+            <div className="absolute right-0 z-20 mt-1 min-w-40 overflow-hidden rounded-xl border border-stone-200/80 bg-white py-1 shadow-sm shadow-stone-900/5">
               <button
                 type="button"
                 onClick={() => void handleDelete()}
-                className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-stone-50"
+                className="block min-h-11 w-full px-4 text-left text-sm text-red-600 active:bg-stone-50"
               >
                 Delete
               </button>
               <button
                 type="button"
                 onClick={() => openDialog('rename')}
-                className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+                className="block min-h-11 w-full px-4 text-left text-sm text-stone-700 active:bg-stone-50"
               >
                 Rename
               </button>
               <button
                 type="button"
                 onClick={() => openDialog('edit')}
-                className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-50"
+                className="block min-h-11 w-full px-4 text-left text-sm text-stone-700 active:bg-stone-50"
               >
                 Edit search
               </button>

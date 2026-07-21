@@ -1,8 +1,6 @@
 export const HELPERS = {
-  newListingsOnly:
-    'We only show listings that appeared after your last check.',
-  notFacebook:
-    "We never replace Facebook—we simply tell you when something changes.",
+  newListingsOnly: 'Only listings new since your last check.',
+  notFacebook: 'Opens on Facebook. Scout only monitors.',
 } as const
 
 export const CHECK_PROGRESS_MESSAGES = [

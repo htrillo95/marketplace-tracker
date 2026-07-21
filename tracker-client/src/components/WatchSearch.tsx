@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppData } from '../context/AppDataContext'
 import type { NewSearchForm } from '../types'
-import { getGreeting } from '../lib/format'
 
 const SUGGESTIONS = [
   'PS5',
@@ -27,7 +26,7 @@ type Props = {
   isFirstVisit?: boolean
 }
 
-export function WatchSearchHero({ isFirstVisit = false }: Props) {
+export function WatchSearch({ isFirstVisit = false }: Props) {
   const navigate = useNavigate()
   const { startWatching } = useAppData()
 
@@ -83,20 +82,22 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
       })
     } catch {
       setPhase('idle')
-      setError("That didn't work — please try again.")
+      setError("That didn't work — try again.")
     }
   }
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4">
       <div>
-        <p className="text-lg text-stone-600">{getGreeting()}.</p>
         <label
           htmlFor="watch-search"
-          className="mt-4 block text-sm font-medium text-stone-900"
+          className="block text-[17px] font-semibold tracking-tight text-stone-900"
         >
-          What should Scout watch?
+          What should I search for?
         </label>
+        <p className="mt-1 text-sm text-stone-500">
+          Search once. Scout keeps watching.
+        </p>
         <input
           id="watch-search"
           type="search"
@@ -106,21 +107,25 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
             if (showDetails && !e.target.value.trim()) setShowDetails(false)
           }}
           onKeyDown={handleQueryKeyDown}
-          placeholder="Search Marketplace…"
-          className="mt-2 w-full rounded-[10px] bg-stone-200/50 px-3.5 py-2.5 text-base text-stone-900 placeholder:text-stone-400 focus:bg-stone-200/70 focus:outline-none"
+          placeholder="PS5, bike, camera…"
+          className="mt-3 w-full rounded-2xl border border-stone-200/80 bg-white px-4 py-3.5 text-[17px] text-stone-900 shadow-sm shadow-stone-900/5 placeholder:text-stone-400 focus:border-stone-300 focus:outline-none"
           autoComplete="off"
           enterKeyHint="search"
+          autoCapitalize="off"
+          autoCorrect="off"
         />
       </div>
 
       {!showDetails && (
-        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {SUGGESTIONS.map((suggestion) => (
             <button
               key={suggestion}
               type="button"
-              onClick={() => setQuery(suggestion)}
-              className="text-sm text-stone-400 transition-colors hover:text-stone-700"
+              onClick={() => {
+                setQuery(suggestion)
+              }}
+              className="shrink-0 rounded-full bg-stone-200/50 px-3.5 py-2 text-sm text-stone-600 active:bg-stone-200"
             >
               {suggestion}
             </button>
@@ -130,12 +135,15 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
 
       {isFirstVisit && !showDetails && (
         <p className="text-sm text-stone-500">
-          Start watching something and we&apos;ll check Marketplace for you.
+          Monitoring starts after you save a search.
         </p>
       )}
 
       {showDetails && (
-        <form onSubmit={handleStartWatching} className="space-y-5 border-t border-stone-200/60 pt-5">
+        <form
+          onSubmit={handleStartWatching}
+          className="space-y-4 border-t border-stone-200/60 pt-4"
+        >
           <p className="text-sm text-stone-600">
             Watching for{' '}
             <span className="font-medium text-stone-900">{query.trim()}</span>
@@ -151,11 +159,12 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
             />
           </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             <Field label="Radius">
               <div className="flex items-center gap-2">
                 <input
                   type="number"
+                  inputMode="numeric"
                   value={details.radius}
                   onChange={(e) => updateDetail('radius', e.target.value)}
                   placeholder="25"
@@ -163,18 +172,19 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
                   min={1}
                   className={inputClass}
                 />
-                <span className="shrink-0 text-sm text-stone-500">miles</span>
+                <span className="shrink-0 text-sm text-stone-500">mi</span>
               </div>
             </Field>
 
-            <Field label="Max price (optional)">
+            <Field label="Max price">
               <div className="flex items-center gap-2">
                 <span className="shrink-0 text-sm text-stone-500">$</span>
                 <input
                   type="number"
+                  inputMode="numeric"
                   value={details.maxPrice}
                   onChange={(e) => updateDetail('maxPrice', e.target.value)}
-                  placeholder="No limit"
+                  placeholder="Any"
                   min={1}
                   className={inputClass}
                 />
@@ -189,10 +199,10 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
                   key={value}
                   type="button"
                   onClick={() => updateDetail('resultsPerSearch', value)}
-                  className={`rounded-full px-3 py-1 text-sm ${
+                  className={`min-h-11 min-w-11 rounded-full px-3.5 text-sm font-medium ${
                     details.resultsPerSearch === value
                       ? 'bg-stone-900 text-white'
-                      : 'text-stone-600 hover:bg-stone-100'
+                      : 'bg-stone-200/50 text-stone-600 active:bg-stone-200'
                   }`}
                 >
                   {value}
@@ -201,11 +211,11 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
             </div>
           </Field>
 
-          <Field label="Nickname (optional)">
+          <Field label="Nickname">
             <input
               value={details.name}
               onChange={(e) => updateDetail('name', e.target.value)}
-              placeholder={query.trim()}
+              placeholder={query.trim() || 'Optional'}
               className={inputClass}
             />
           </Field>
@@ -215,9 +225,9 @@ export function WatchSearchHero({ isFirstVisit = false }: Props) {
           <button
             type="submit"
             disabled={phase === 'setting-up'}
-            className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-60"
+            className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-stone-900 text-[15px] font-medium text-white active:bg-stone-800 disabled:opacity-60 sm:w-auto sm:px-6"
           >
-            {phase === 'setting-up' ? 'Getting things ready…' : 'Start Watching'}
+            {phase === 'setting-up' ? 'Setting up…' : 'Start watching'}
           </button>
         </form>
       )}
@@ -234,11 +244,11 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm text-stone-600">{label}</span>
-      <div className="mt-1">{children}</div>
+      <span className="text-sm text-stone-500">{label}</span>
+      <div className="mt-1.5">{children}</div>
     </label>
   )
 }
 
 const inputClass =
-  'w-full rounded-[8px] bg-stone-200/40 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:bg-stone-200/60 focus:outline-none'
+  'min-h-11 w-full rounded-xl border border-stone-200/80 bg-white px-3.5 text-[16px] text-stone-900 placeholder:text-stone-400 focus:border-stone-300 focus:outline-none'

@@ -106,10 +106,13 @@ export function SearchWorkspacePage() {
     : checkCompleteMessage ?? getWorkspaceResultSummary(newCount)
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-5">
-        <div className="flex items-start justify-between gap-4">
-          <Link to="/" className="text-sm text-stone-500 hover:text-stone-800">
+    <div className="space-y-8">
+      <header className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            to="/"
+            className="inline-flex min-h-11 items-center text-sm text-stone-500 active:text-stone-800"
+          >
             ← Home
           </Link>
           <WatchRowMenu search={search} />
@@ -117,24 +120,23 @@ export function SearchWorkspacePage() {
 
         {locationState?.justCreated && (
           <p className="text-sm text-stone-600">
-            Scout is now watching &ldquo;{locationState.displayName ?? search.name}
-            &rdquo; for you.
+            Now watching &ldquo;{locationState.displayName ?? search.name}&rdquo;.
           </p>
         )}
 
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900">
+          <h1 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-2xl">
             {search.name}
           </h1>
-          <div className="mt-3 space-y-0.5 text-sm text-stone-500">
+          <div className="mt-2 space-y-0.5 text-sm text-stone-500">
             {locationLines.map((line) => (
               <p key={line}>{line}</p>
             ))}
           </div>
-          <p className="mt-3 text-sm text-stone-400">
+          <p className="mt-2 text-sm text-stone-400">
             {formatCheckedAt(search.lastCheckedAt)}
           </p>
-          <div className="mt-4 text-base text-stone-700">
+          <div className="mt-3 text-[15px] text-stone-700">
             {checking ? <CheckingProgress /> : statusMessage}
           </div>
         </div>
@@ -143,7 +145,7 @@ export function SearchWorkspacePage() {
           <button
             type="button"
             onClick={() => void handleCheck()}
-            className="text-sm text-stone-500 underline decoration-stone-300 underline-offset-4 hover:text-stone-800"
+            className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-stone-900 text-[15px] font-medium text-white active:bg-stone-800 sm:w-auto sm:px-5"
           >
             Check Marketplace
           </button>
@@ -151,9 +153,9 @@ export function SearchWorkspacePage() {
       </header>
 
       {newCount > 0 && !checking && (
-        <section className="space-y-4">
+        <section className="space-y-3">
           <p className="text-xs text-stone-400">{HELPERS.newListingsOnly}</p>
-          <ul className="grid gap-5 sm:grid-cols-2">
+          <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4">
             {newListings.map((listing) => (
               <li key={listing.id}>
                 <ListingCard listing={listing} />
@@ -164,18 +166,18 @@ export function SearchWorkspacePage() {
       )}
 
       {previousListings.length > 0 && (
-        <section className="border-t border-stone-200/60 pt-8">
+        <section className="border-t border-stone-200/60 pt-6">
           <button
             type="button"
             onClick={() => setShowPrevious((v) => !v)}
-            className="text-sm text-stone-500 hover:text-stone-800"
+            className="inline-flex min-h-11 items-center text-sm text-stone-500 active:text-stone-800"
           >
-            {showPrevious ? 'Hide' : 'View'} previously found listings (
+            {showPrevious ? 'Hide' : 'View'} previously found (
             {previousListings.length})
           </button>
 
           {showPrevious && (
-            <ul className="mt-6 grid gap-5 sm:grid-cols-2">
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4">
               {previousListings.map((listing) => (
                 <li key={listing.id}>
                   <ListingCard listing={listing} />

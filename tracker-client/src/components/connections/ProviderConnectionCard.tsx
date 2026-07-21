@@ -89,57 +89,51 @@ export function ProviderConnectionCard({
     : 'Unavailable'
 
   return (
-    <section className="rounded-2xl border border-stone-200/80 bg-white/80 p-6 shadow-sm shadow-stone-200/40">
+    <section className="rounded-2xl border border-stone-200/70 bg-white p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight text-stone-900">
+          <h2 className="text-[17px] font-semibold tracking-tight text-stone-900">
             {connection.displayName}
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-stone-500">
-            {connection.description}
+          <p className="mt-1 text-sm text-stone-500">
+            Used for Marketplace checks
           </p>
         </div>
         <ConnectionStatusBadge status={status} />
       </div>
 
-      <dl className="mt-6 grid gap-4 border-t border-stone-100 pt-5 sm:grid-cols-2">
+      <dl className="mt-4 grid gap-3 border-t border-stone-100 pt-4 sm:grid-cols-2">
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-stone-400">
-            Connection Status
-          </dt>
-          <dd className="mt-1.5 text-sm text-stone-800">
+          <dt className="text-[13px] text-stone-400">Status</dt>
+          <dd className="mt-1 text-sm text-stone-800">
             <ConnectionStatusBadge status={status} />
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-stone-400">
-            Last Connected
-          </dt>
-          <dd className="mt-1.5 text-sm text-stone-800">{lastConnectedLabel}</dd>
+          <dt className="text-[13px] text-stone-400">Last connected</dt>
+          <dd className="mt-1 text-sm text-stone-800">{lastConnectedLabel}</dd>
         </div>
       </dl>
 
       {connection.message && (
-        <p className="mt-5 text-sm leading-relaxed text-stone-600">
-          {connection.message}
-        </p>
+        <p className="mt-4 text-sm text-stone-600">{connection.message}</p>
       )}
 
       {actionNote && (
-        <p className="mt-4 rounded-xl bg-stone-50 px-4 py-3 text-sm leading-relaxed text-stone-700">
+        <p className="mt-3 rounded-xl bg-stone-50 px-3.5 py-3 text-sm text-stone-700">
           {actionNote}
         </p>
       )}
 
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         {needsConnect && (
           <button
             type="button"
             disabled={busy}
             onClick={() => handleConnectOrReconnect('connect')}
-            className="rounded-lg bg-stone-900 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:opacity-50"
+            className="flex min-h-11 items-center justify-center rounded-xl bg-stone-900 px-4 text-sm font-medium text-white active:bg-stone-800 disabled:opacity-50"
           >
             Connect Facebook
           </button>
@@ -150,7 +144,7 @@ export function ProviderConnectionCard({
             type="button"
             disabled={busy}
             onClick={() => handleConnectOrReconnect('reconnect')}
-            className="rounded-lg bg-stone-900 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:opacity-50"
+            className="flex min-h-11 items-center justify-center rounded-xl bg-stone-900 px-4 text-sm font-medium text-white active:bg-stone-800 disabled:opacity-50"
           >
             Reconnect Facebook
           </button>
@@ -160,7 +154,7 @@ export function ProviderConnectionCard({
           type="button"
           disabled={busy}
           onClick={refreshStatus}
-          className="rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-50"
+          className="flex min-h-11 items-center justify-center rounded-xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 active:bg-stone-50 disabled:opacity-50"
         >
           Refresh status
         </button>
@@ -170,7 +164,7 @@ export function ProviderConnectionCard({
           disabled={busy || needsConnect}
           onClick={handleDisconnect}
           title="Disconnect is not fully implemented yet"
-          className="rounded-lg border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-500 transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex min-h-11 items-center justify-center rounded-xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-500 active:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Disconnect
         </button>
