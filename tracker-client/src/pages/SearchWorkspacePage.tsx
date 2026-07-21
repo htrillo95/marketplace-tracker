@@ -2,8 +2,10 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CheckingProgress } from '../components/CheckingProgress'
 import { ListingCard } from '../components/ListingCard'
+import { SmartMarketplaceButton } from '../components/SmartMarketplaceButton'
 import { WatchRowMenu } from '../components/WatchRowMenu'
 import { useAppData } from '../context/AppDataContext'
+import { useFacebookConnection } from '../context/FacebookConnectionContext'
 import {
   getCheckCompleteMessage,
   getWorkspaceResultSummary,
@@ -28,6 +30,8 @@ export function SearchWorkspacePage() {
   const locationState = location.state as LocationState | null
   const { searches, listings, isLoading, runningId, checkMarketplace, statusVersion } =
     useAppData()
+  const { ensureFacebookConnected, status: facebookStatus } =
+    useFacebookConnection()
 
   const [showPrevious, setShowPrevious] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
@@ -52,6 +56,13 @@ export function SearchWorkspacePage() {
   const handleCheck = useCallback(async () => {
     if (!search) return
 
+    const ready = await ensureFacebookConnected({
+      preferReconnect:
+        facebookStatus === 'session_expired' ||
+        facebookStatus === 'connection_error',
+    })
+    if (!ready) return
+
     setIsChecking(true)
     setCheckCompleteMessage(null)
 
@@ -63,7 +74,7 @@ export function SearchWorkspacePage() {
     } finally {
       setIsChecking(false)
     }
-  }, [search, checkMarketplace])
+  }, [search, checkMarketplace, ensureFacebookConnected, facebookStatus])
 
   useEffect(() => {
     if (!search || !locationState?.autoCheck || autoCheckStarted.current) return
@@ -141,15 +152,10 @@ export function SearchWorkspacePage() {
           </div>
         </div>
 
-        {!checking && (
-          <button
-            type="button"
-            onClick={() => void handleCheck()}
-            className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-stone-900 text-[15px] font-medium text-white active:bg-stone-800 sm:w-auto sm:px-5"
-          >
-            Check Marketplace
-          </button>
-        )}
+        <SmartMarketplaceButton
+          checking={checking}
+          onCheck={handleCheck}
+        />
       </header>
 
       {newCount > 0 && !checking && (

@@ -1,14 +1,13 @@
-import { Link } from 'react-router-dom'
+import { useFacebookConnection } from '../context/FacebookConnectionContext'
 import type { ConnectionStatus } from '../types'
 import { SectionLabel } from './SectionLabel'
 
 export type ProviderSurfaceItem = {
   id: string
   name: string
-  /** Live Facebook status, or static roadmap labels */
   statusLabel: string
   tone: 'live' | 'muted'
-  href?: string
+  onPress?: () => void
 }
 
 type Props = {
@@ -32,13 +31,23 @@ function facebookLabel(status: ConnectionStatus | null): string {
 }
 
 export function ProviderStatusList({ facebookStatus, loading }: Props) {
+  const { openConnectFlow, needsAttention } = useFacebookConnection()
+
   const items: ProviderSurfaceItem[] = [
     {
       id: 'facebook',
       name: 'Facebook Marketplace',
       statusLabel: loading ? '…' : facebookLabel(facebookStatus),
       tone: facebookStatus === 'connected' ? 'live' : 'muted',
-      href: '/settings',
+      onPress:
+        !loading && needsAttention
+          ? () =>
+              openConnectFlow({
+                preferReconnect:
+                  facebookStatus === 'session_expired' ||
+                  facebookStatus === 'connection_error',
+              })
+          : undefined,
     },
     {
       id: 'craigslist',
@@ -56,21 +65,10 @@ export function ProviderStatusList({ facebookStatus, loading }: Props) {
 
   return (
     <section className="space-y-2">
-      <SectionLabel
-        action={
-          <Link
-            to="/settings"
-            className="text-[13px] font-medium text-stone-500 active:text-stone-800"
-          >
-            Manage
-          </Link>
-        }
-      >
-        Providers
-      </SectionLabel>
+      <SectionLabel>Providers</SectionLabel>
       <ul className="overflow-hidden rounded-2xl border border-stone-200/70 bg-white">
         {items.map((item, index) => {
-          const rowClass = `flex min-h-12 items-center justify-between gap-3 px-4 ${
+          const rowClass = `flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left ${
             index > 0 ? 'border-t border-stone-100' : ''
           }`
 
@@ -91,10 +89,14 @@ export function ProviderStatusList({ facebookStatus, loading }: Props) {
 
           return (
             <li key={item.id}>
-              {item.href ? (
-                <Link to={item.href} className={`${rowClass} active:bg-stone-50`}>
+              {item.onPress ? (
+                <button
+                  type="button"
+                  onClick={item.onPress}
+                  className={`${rowClass} active:bg-stone-50`}
+                >
                   {content}
-                </Link>
+                </button>
               ) : (
                 <div className={rowClass}>{content}</div>
               )}

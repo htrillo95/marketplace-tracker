@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import { fetchConnections } from '../api'
 import { ProviderConnectionCard } from '../components/connections/ProviderConnectionCard'
 import { SectionLabel } from '../components/SectionLabel'
+import { useFacebookConnection } from '../context/FacebookConnectionContext'
 import type { ProviderConnection } from '../types'
 
 export function SettingsPage() {
+  const { refreshStatus } = useFacebookConnection()
   const [connections, setConnections] = useState<ProviderConnection[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,12 +34,15 @@ export function SettingsPage() {
     }
   }, [])
 
-  function handleUpdated(next: ProviderConnection) {
+  async function handleUpdated(next: ProviderConnection) {
     setConnections((prev) =>
       prev.map((item) =>
         item.providerId === next.providerId ? next : item,
       ),
     )
+    if (next.providerId === 'facebook') {
+      await refreshStatus()
+    }
   }
 
   return (

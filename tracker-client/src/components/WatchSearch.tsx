@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppData } from '../context/AppDataContext'
+import { useFacebookConnection } from '../context/FacebookConnectionContext'
 import type { NewSearchForm } from '../types'
 
 const SUGGESTIONS = [
@@ -29,6 +30,7 @@ type Props = {
 export function WatchSearch({ isFirstVisit = false }: Props) {
   const navigate = useNavigate()
   const { startWatching } = useAppData()
+  const { ensureFacebookConnected, status } = useFacebookConnection()
 
   const [query, setQuery] = useState('')
   const [showDetails, setShowDetails] = useState(false)
@@ -70,6 +72,15 @@ export function WatchSearch({ isFirstVisit = false }: Props) {
 
     setPhase('setting-up')
     setError(null)
+
+    const ready = await ensureFacebookConnected({
+      preferReconnect:
+        status === 'session_expired' || status === 'connection_error',
+    })
+    if (!ready) {
+      setPhase('idle')
+      return
+    }
 
     try {
       const search = await startWatching(form)
