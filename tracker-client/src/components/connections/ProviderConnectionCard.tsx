@@ -96,7 +96,10 @@ export function ProviderConnectionCard({
             {connection.displayName}
           </h2>
           <p className="mt-1 text-sm text-stone-500">
-            Used for Marketplace checks
+            Optional authenticated Facebook session
+          </p>
+          <p className="mt-1 text-sm text-stone-500">
+            Scout searches Marketplace anonymously by default.
           </p>
         </div>
         <ConnectionStatusBadge status={status} />

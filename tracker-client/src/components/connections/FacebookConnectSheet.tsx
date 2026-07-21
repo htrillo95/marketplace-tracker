@@ -115,11 +115,10 @@ export function FacebookConnectSheet({
                 {title}
               </h2>
               <p className="mt-2 text-[15px] leading-relaxed text-stone-600">
-                Scout monitors Facebook Marketplace using your authenticated
-                Facebook session.
+                Optional authenticated Facebook session.
               </p>
               <p className="mt-2 text-[15px] leading-relaxed text-stone-600">
-                Connect Facebook once to enable Marketplace searches.
+                Scout searches Marketplace anonymously by default.
               </p>
             </div>
 

@@ -27,7 +27,7 @@ function baseConnection(
     providerId: 'facebook',
     displayName: 'Facebook Marketplace',
     description:
-      'Scout uses your Facebook session to check Marketplace for saved watches.',
+      'Optional authenticated Facebook session. Scout searches Marketplace anonymously by default.',
     ...partial,
   }
 }
@@ -68,7 +68,8 @@ function resolveConnection(): ProviderConnection {
     return baseConnection({
       status: 'not_connected',
       lastConnectedAt: null,
-      message: 'Connect Facebook to let Scout check Marketplace for you.',
+      message:
+        'No authenticated session saved. Scout still searches Marketplace anonymously.',
     })
   }
 
@@ -82,11 +83,12 @@ function resolveConnection(): ProviderConnection {
   }
 
   // session_expired is reserved for later detection (e.g. scraper hits login).
-  // For Phase 2, a valid session file means Connected.
+  // A valid session file means an optional authenticated fallback is available.
   return baseConnection({
     status: 'connected',
     lastConnectedAt: meta.lastConnectedAt,
-    message: 'Facebook is connected. Scout can use this session for Marketplace checks.',
+    message:
+      'Optional authenticated session is saved. Scout searches Marketplace anonymously by default.',
   })
 }
 
@@ -101,8 +103,8 @@ function connectViaExistingAuthScript(): ConnectProviderResult {
       command: AUTH_COMMAND,
       message:
         connection.status === 'connected'
-          ? 'Facebook already looks connected. To refresh the session, run the auth utility in tracker-api, then refresh status here.'
-          : 'Complete Facebook login with the existing auth utility in tracker-api (`npm run facebook:auth`), then refresh connection status. The browser login window is unchanged — Scout does not replace that flow.',
+          ? 'An authenticated session is already saved. To refresh it, run the optional auth utility in tracker-api, then refresh status here.'
+          : 'Optional: complete Facebook login with the auth utility in tracker-api (`npm run facebook:auth`), then refresh status. Marketplace searches work anonymously without this.',
     },
   }
 }

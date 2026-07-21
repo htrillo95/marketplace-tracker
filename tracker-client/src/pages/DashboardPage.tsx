@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react'
-import { FacebookConnectPrompt } from '../components/connections/FacebookConnectPrompt'
 import { ProviderStatusList } from '../components/ProviderStatusList'
 import { RecentActivity } from '../components/RecentActivity'
 import { RecentListings } from '../components/RecentListings'
@@ -45,8 +44,6 @@ export function DashboardPage() {
   return (
     <div className="space-y-8">
       <WatchSearch isFirstVisit={isFirstVisit} />
-
-      <FacebookConnectPrompt />
 
       <ProviderStatusList
         facebookStatus={facebookStatus}

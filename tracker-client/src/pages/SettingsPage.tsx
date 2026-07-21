@@ -57,7 +57,9 @@ export function SettingsPage() {
         <h1 className="mt-2 text-[22px] font-semibold tracking-tight text-stone-900">
           Settings
         </h1>
-        <p className="mt-1 text-sm text-stone-500">Connected marketplaces</p>
+        <p className="mt-1 text-sm text-stone-500">
+          Optional. Scout searches Marketplace anonymously by default.
+        </p>
       </div>
 
       <div className="space-y-3">
