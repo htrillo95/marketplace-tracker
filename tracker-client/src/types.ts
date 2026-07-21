@@ -47,3 +47,37 @@ export type NewSearchForm = {
   radius: string
   resultsPerSearch: string
 }
+
+export type ProviderId = 'facebook'
+
+export type ConnectionStatus =
+  | 'not_connected'
+  | 'connected'
+  | 'session_expired'
+  | 'connection_error'
+
+export type ProviderConnection = {
+  providerId: ProviderId
+  displayName: string
+  description: string
+  status: ConnectionStatus
+  lastConnectedAt: string | null
+  message: string | null
+}
+
+export type ConnectProviderResult = {
+  providerId: ProviderId
+  connection: ProviderConnection
+  action: {
+    mode: 'external_script' | 'not_implemented'
+    command: string | null
+    message: string
+  }
+}
+
+export type DisconnectProviderResult = {
+  providerId: ProviderId
+  implemented: boolean
+  message: string
+  connection: ProviderConnection
+}

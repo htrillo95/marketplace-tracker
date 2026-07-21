@@ -3,6 +3,7 @@ import { AppDataProvider } from './context/AppDataContext'
 import { Layout } from './components/Layout'
 import { DashboardPage } from './pages/DashboardPage'
 import { SearchWorkspacePage } from './pages/SearchWorkspacePage'
+import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route element={<Layout />}>
             <Route index element={<DashboardPage />} />
             <Route path="search/:id" element={<SearchWorkspacePage />} />
+            <Route path="settings" element={<SettingsPage />} />
             <Route path="manage" element={<Navigate to="/" replace />} />
             <Route path="searches" element={<Navigate to="/" replace />} />
             <Route path="watchlist" element={<Navigate to="/" replace />} />

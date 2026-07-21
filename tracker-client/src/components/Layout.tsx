@@ -7,7 +7,7 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-[#f7f6f3] text-stone-900">
       <header className="border-b border-stone-200/60">
-        <div className="mx-auto max-w-2xl px-6 py-6">
+        <div className="mx-auto flex max-w-2xl items-start justify-between gap-4 px-6 py-6">
           <Link to="/" className="block">
             <p className="text-base font-semibold tracking-tight text-stone-900">
               Scout
@@ -15,6 +15,12 @@ export function Layout() {
             <p className="mt-1 text-sm text-stone-500">
               We&apos;ll tell you when Marketplace changes.
             </p>
+          </Link>
+          <Link
+            to="/settings"
+            className="shrink-0 pt-0.5 text-sm text-stone-500 transition hover:text-stone-800"
+          >
+            Settings
           </Link>
         </div>
       </header>

@@ -1,4 +1,5 @@
 import express from 'express'
+import connectionsRouter from './routes/connections'
 import healthRouter from './routes/health'
 import listingsRouter from './routes/listings'
 import searchesRouter from './routes/searches'
@@ -55,5 +56,6 @@ app.use(express.json())
 app.use('/health', healthRouter)
 app.use('/searches', searchesRouter)
 app.use('/listings', listingsRouter)
+app.use('/connections', connectionsRouter)
 
 export default app

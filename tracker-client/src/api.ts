@@ -1,4 +1,11 @@
-import type { RunSearchResult, SavedSearch } from './types'
+import type {
+  ConnectProviderResult,
+  DisconnectProviderResult,
+  ProviderConnection,
+  ProviderId,
+  RunSearchResult,
+  SavedSearch,
+} from './types'
 
 export const API_BASE =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
@@ -57,4 +64,53 @@ export async function checkHealth() {
   const response = await fetch(`${API_BASE}/health`)
   const data = await response.json()
   return data.status === 'ok'
+}
+
+export async function fetchConnections(): Promise<ProviderConnection[]> {
+  const response = await fetch(`${API_BASE}/connections`)
+  if (!response.ok) throw new Error('Failed to load connections')
+  const data = (await response.json()) as { connections: ProviderConnection[] }
+  return data.connections
+}
+
+export async function fetchConnection(
+  providerId: ProviderId,
+): Promise<ProviderConnection> {
+  const response = await fetch(`${API_BASE}/connections/${providerId}`)
+  if (!response.ok) throw new Error('Failed to load connection status')
+  return response.json()
+}
+
+export async function connectProvider(
+  providerId: ProviderId,
+): Promise<ConnectProviderResult> {
+  const response = await fetch(`${API_BASE}/connections/${providerId}/connect`, {
+    method: 'POST',
+  })
+  if (!response.ok) throw new Error('Failed to start connection')
+  return response.json()
+}
+
+export async function reconnectProvider(
+  providerId: ProviderId,
+): Promise<ConnectProviderResult> {
+  const response = await fetch(
+    `${API_BASE}/connections/${providerId}/reconnect`,
+    { method: 'POST' },
+  )
+  if (!response.ok) throw new Error('Failed to start reconnection')
+  return response.json()
+}
+
+export async function disconnectProvider(
+  providerId: ProviderId,
+): Promise<DisconnectProviderResult> {
+  const response = await fetch(`${API_BASE}/connections/${providerId}`, {
+    method: 'DELETE',
+  })
+  const data = (await response.json()) as DisconnectProviderResult
+  if (!response.ok && response.status !== 501) {
+    throw new Error(data.message || 'Failed to disconnect')
+  }
+  return data
 }
