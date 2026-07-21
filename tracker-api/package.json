@@ -10,7 +10,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "facebook:poc": "tsx src/scripts/facebook-poc.ts"
+    "facebook:poc": "tsx src/scripts/facebook-poc.ts",
+    "facebook:auth": "tsx src/scripts/facebook-auth.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

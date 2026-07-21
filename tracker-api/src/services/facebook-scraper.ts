@@ -1,8 +1,15 @@
-console.log('9. facebook-scraper module imported')
+import * as fs from 'fs'
+import * as path from 'path'
 import { chromium, type Page } from 'playwright'
 import { ListingInput } from '../store/listings'
 
 export const FACEBOOK_MARKETPLACE_SOURCE = 'facebook-marketplace'
+
+const FACEBOOK_STORAGE_STATE_PATH = path.join(
+  process.cwd(),
+  'storage',
+  'facebook-state.json',
+)
 
 export type ScrapeOptions = {
   headless?: boolean
@@ -23,20 +30,6 @@ export type MarketplaceSearchParams = {
   location: string
   radius: number
   maxPrice?: number | null
-}
-
-/** TEMP DEBUG — remove after scrape investigation */
-export type ScrapeDiagnostics = {
-  finalUrl: string
-  pageTitle: string
-  loginDetected: boolean
-  listingAnchorCount: number
-  bodyPreview: string | null
-}
-
-export type ScrapeMarketplaceResult = {
-  listings: ListingInput[]
-  diagnostics: ScrapeDiagnostics
 }
 
 export function buildMarketplaceSearchUrl(
@@ -160,7 +153,7 @@ async function collectListings(
 export async function scrapeMarketplaceSearch(
   searchParams: MarketplaceSearchParams,
   options: ScrapeOptions = {},
-): Promise<ScrapeMarketplaceResult> {
+): Promise<ListingInput[]> {
   const {
     headless = true,
     maxListings = 5,
@@ -170,34 +163,31 @@ export async function scrapeMarketplaceSearch(
 
   const searchUrl = buildMarketplaceSearchUrl(searchParams)
   const browser = await chromium.launch({ headless })
-  const page = await browser.newPage()
+
+  const hasAuthenticatedSession = fs.existsSync(FACEBOOK_STORAGE_STATE_PATH)
+  const context = await browser.newContext(
+    hasAuthenticatedSession
+      ? { storageState: FACEBOOK_STORAGE_STATE_PATH }
+      : {},
+  )
+
+  if (hasAuthenticatedSession) {
+    console.log(
+      `Using authenticated Facebook session from ${FACEBOOK_STORAGE_STATE_PATH}`,
+    )
+  } else {
+    console.log(
+      'No Facebook storage state found — using anonymous browser session',
+    )
+  }
+
+  const page = await context.newPage()
 
   try {
     await page.goto(searchUrl, {
       waitUntil: 'domcontentloaded',
       timeout: 60_000,
     })
-
-    // TEMP DEBUG: capture diagnostics for the API response — remove after investigation
-    const loginDetected = await detectLoginRequired(page)
-    const listingAnchorCount = await page
-      .locator('a[href*="/marketplace/item/"]')
-      .count()
-    const diagnostics: ScrapeDiagnostics = {
-      finalUrl: page.url(),
-      pageTitle: await page.title(),
-      loginDetected,
-      listingAnchorCount,
-      bodyPreview:
-        listingAnchorCount === 0
-          ? (
-              await page
-                .locator('body')
-                .innerText()
-                .catch(() => '')
-            ).slice(0, 500)
-          : null,
-    }
 
     if (onPageReady) {
       await onPageReady(page)
@@ -211,8 +201,7 @@ export async function scrapeMarketplaceSearch(
 
     // Must await before the finally block runs, otherwise browser.close()
     // executes while collectListings() is still using the page.
-    const listings = await collectListings(page, maxListings)
-    return { listings, diagnostics }
+    return await collectListings(page, maxListings)
   } catch (error) {
     throw new ScraperError(
       `Failed to scrape Marketplace for query "${searchParams.query}"`,

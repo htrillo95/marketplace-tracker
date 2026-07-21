@@ -37,14 +37,6 @@ export type RunSearchResult = {
   newListings: number
   skippedDuplicates: number
   newListingIds: string[]
-  /** TEMP DEBUG — remove after scrape investigation */
-  diagnostics?: {
-    finalUrl: string
-    pageTitle: string
-    loginDetected: boolean
-    listingAnchorCount: number
-    bodyPreview: string | null
-  }
 }
 
 export type NewSearchForm = {
