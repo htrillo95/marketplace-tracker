@@ -1,4 +1,4 @@
-import type { ConnectionStatus } from '../types'
+import type { ConnectionStatus } from '../../types'
 
 const STATUS_LABELS: Record<ConnectionStatus, string> = {
   not_connected: 'Not Connected',
