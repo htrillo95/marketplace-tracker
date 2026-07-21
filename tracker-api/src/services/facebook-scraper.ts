@@ -164,14 +164,31 @@ export async function scrapeMarketplaceSearch(
   const searchUrl = buildMarketplaceSearchUrl(searchParams)
   const browser = await chromium.launch({ headless })
 
-  const hasAuthenticatedSession = fs.existsSync(FACEBOOK_STORAGE_STATE_PATH)
-  const context = await browser.newContext(
-    hasAuthenticatedSession
-      ? { storageState: FACEBOOK_STORAGE_STATE_PATH }
-      : {},
-  )
+  // TEMP local diagnostic: USE_FACEBOOK_AUTH=false forces anonymous context.
+  // Default (unset or true) keeps existing authenticated behavior.
+  const rawUseFacebookAuth = process.env.USE_FACEBOOK_AUTH
+  const useFacebookAuth = rawUseFacebookAuth !== 'false'
+  const stateFileExists = fs.existsSync(FACEBOOK_STORAGE_STATE_PATH)
+  const loadingAuthenticatedSession = useFacebookAuth && stateFileExists
 
-  if (hasAuthenticatedSession) {
+  console.log(`USE_FACEBOOK_AUTH=${rawUseFacebookAuth ?? '(unset)'}`)
+  console.log(`facebook-state.json exists: ${stateFileExists}`)
+  console.log(`Loading authenticated session: ${loadingAuthenticatedSession}`)
+  if (loadingAuthenticatedSession) {
+    console.log('Creating authenticated Playwright context (storageState will be passed)')
+  } else {
+    console.log('Creating anonymous Playwright context')
+  }
+
+  const context = loadingAuthenticatedSession
+    ? await browser.newContext({ storageState: FACEBOOK_STORAGE_STATE_PATH })
+    : await browser.newContext()
+
+  if (!useFacebookAuth) {
+    console.log(
+      '[ANON-TEST] USE_FACEBOOK_AUTH=false — anonymous browser context (storageState disabled)',
+    )
+  } else if (loadingAuthenticatedSession) {
     console.log(
       `Using authenticated Facebook session from ${FACEBOOK_STORAGE_STATE_PATH}`,
     )
@@ -184,14 +201,25 @@ export async function scrapeMarketplaceSearch(
   const page = await context.newPage()
 
   try {
+    console.log(`[ANON-TEST] Search query: ${searchParams.query}`)
+    console.log(`[ANON-TEST] Initial URL: ${searchUrl}`)
+
     await page.goto(searchUrl, {
       waitUntil: 'domcontentloaded',
       timeout: 60_000,
     })
 
+    const finalUrl = page.url()
+    const pageTitle = await page.title()
+    const loginUiDetected = await detectLoginRequired(page)
+
+    console.log(`[ANON-TEST] Final URL: ${finalUrl}`)
+    console.log(`[ANON-TEST] Page title: ${pageTitle}`)
+    console.log(`[ANON-TEST] Login UI detected: ${loginUiDetected}`)
+
     if (onPageReady) {
       await onPageReady(page)
-    } else if (await detectLoginRequired(page)) {
+    } else if (loginUiDetected) {
       console.warn(
         'Facebook login may be required. API runs cannot wait for manual login.',
       )
@@ -199,9 +227,28 @@ export async function scrapeMarketplaceSearch(
 
     await waitForListings(page, listingWaitTimeoutMs)
 
+    const anchorCount = await page
+      .locator('a[href*="/marketplace/item/"]')
+      .count()
+    console.log(`[ANON-TEST] Listing anchors found: ${anchorCount}`)
+
     // Must await before the finally block runs, otherwise browser.close()
     // executes while collectListings() is still using the page.
-    return await collectListings(page, maxListings)
+    const listings = await collectListings(page, maxListings)
+    console.log(`[ANON-TEST] Listings returned: ${listings.length}`)
+
+    if (listings.length === 0) {
+      const outDir = path.join(process.cwd(), 'storage')
+      fs.mkdirSync(outDir, { recursive: true })
+      const screenshotPath = path.join(outDir, 'anonymous-marketplace-test.png')
+      const htmlPath = path.join(outDir, 'anonymous-marketplace-test.html')
+      await page.screenshot({ path: screenshotPath, fullPage: true })
+      fs.writeFileSync(htmlPath, await page.content(), 'utf8')
+      console.log(`[ANON-TEST] Saved screenshot: ${screenshotPath}`)
+      console.log(`[ANON-TEST] Saved HTML: ${htmlPath}`)
+    }
+
+    return listings
   } catch (error) {
     throw new ScraperError(
       `Failed to scrape Marketplace for query "${searchParams.query}"`,
