@@ -25,6 +25,20 @@ export type MarketplaceSearchParams = {
   maxPrice?: number | null
 }
 
+/** TEMP DEBUG — remove after scrape investigation */
+export type ScrapeDiagnostics = {
+  finalUrl: string
+  pageTitle: string
+  loginDetected: boolean
+  listingAnchorCount: number
+  bodyPreview: string | null
+}
+
+export type ScrapeMarketplaceResult = {
+  listings: ListingInput[]
+  diagnostics: ScrapeDiagnostics
+}
+
 export function buildMarketplaceSearchUrl(
   params: MarketplaceSearchParams,
 ): string {
@@ -146,7 +160,7 @@ async function collectListings(
 export async function scrapeMarketplaceSearch(
   searchParams: MarketplaceSearchParams,
   options: ScrapeOptions = {},
-): Promise<ListingInput[]> {
+): Promise<ScrapeMarketplaceResult> {
   const {
     headless = true,
     maxListings = 5,
@@ -164,28 +178,25 @@ export async function scrapeMarketplaceSearch(
       timeout: 60_000,
     })
 
-    // TEMP DEBUG: diagnose empty scrapes — remove after investigation
-    const debugLoginRequired = await detectLoginRequired(page)
-    const debugListingCount = await page
+    // TEMP DEBUG: capture diagnostics for the API response — remove after investigation
+    const loginDetected = await detectLoginRequired(page)
+    const listingAnchorCount = await page
       .locator('a[href*="/marketplace/item/"]')
       .count()
-    console.log('[scrape debug] final URL:', page.url())
-    console.log('[scrape debug] page title:', await page.title())
-    console.log('[scrape debug] login detected:', debugLoginRequired)
-    console.log(
-      '[scrape debug] listing anchor count:',
-      debugListingCount,
-    )
-
-    if (debugListingCount === 0) {
-      const screenshotPath = `/tmp/scout-scrape-debug-${Date.now()}.png`
-      await page.screenshot({ path: screenshotPath, fullPage: true })
-      console.log('[scrape debug] screenshot saved:', screenshotPath)
-
-      const bodyText = await page.evaluate(
-        () => document.body?.innerText?.slice(0, 1000) ?? '',
-      )
-      console.log('[scrape debug] body.innerText (first 1000 chars):\n', bodyText)
+    const diagnostics: ScrapeDiagnostics = {
+      finalUrl: page.url(),
+      pageTitle: await page.title(),
+      loginDetected,
+      listingAnchorCount,
+      bodyPreview:
+        listingAnchorCount === 0
+          ? (
+              await page
+                .locator('body')
+                .innerText()
+                .catch(() => '')
+            ).slice(0, 500)
+          : null,
     }
 
     if (onPageReady) {
@@ -200,7 +211,8 @@ export async function scrapeMarketplaceSearch(
 
     // Must await before the finally block runs, otherwise browser.close()
     // executes while collectListings() is still using the page.
-    return await collectListings(page, maxListings)
+    const listings = await collectListings(page, maxListings)
+    return { listings, diagnostics }
   } catch (error) {
     throw new ScraperError(
       `Failed to scrape Marketplace for query "${searchParams.query}"`,

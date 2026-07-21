@@ -29,7 +29,7 @@ function waitForEnter(message: string): Promise<void> {
 }
 
 function printListings(
-  listings: Awaited<ReturnType<typeof scrapeMarketplaceSearch>>,
+  listings: Awaited<ReturnType<typeof scrapeMarketplaceSearch>>['listings'],
 ) {
   listings.forEach((listing, index) => {
     console.log(`--- Result ${index + 1} ---`)
@@ -47,7 +47,7 @@ async function main() {
   console.log('This is a disposable feasibility test, not a production scraper.\n')
   console.log(`Search URL: ${buildMarketplaceSearchUrl(POC_SEARCH)}\n`)
 
-  const listings = await scrapeMarketplaceSearch(POC_SEARCH, {
+  const { listings } = await scrapeMarketplaceSearch(POC_SEARCH, {
     headless: false,
     onPageReady: async (page) => {
       console.log(`Page title: ${await page.title()}\n`)

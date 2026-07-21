@@ -1,6 +1,9 @@
 import { saveNewListings } from '../store/listings'
 import { getSearchById, updateSearchAfterRun } from '../store/searches'
-import { scrapeMarketplaceSearch } from './facebook-scraper'
+import {
+  scrapeMarketplaceSearch,
+  type ScrapeDiagnostics,
+} from './facebook-scraper'
 
 // TODO: Add automatic scheduled searches so watches run on a timer.
 
@@ -12,6 +15,8 @@ export type RunSearchResult = {
   newListings: number
   skippedDuplicates: number
   newListingIds: string[]
+  /** TEMP DEBUG — remove after scrape investigation */
+  diagnostics: ScrapeDiagnostics
 }
 
 export class RunSearchError extends Error {
@@ -31,7 +36,7 @@ export async function runSavedSearch(
   }
 
   try {
-    const listings = await scrapeMarketplaceSearch(
+    const { listings, diagnostics } = await scrapeMarketplaceSearch(
       {
         query: search.query || search.name,
         location: search.location,
@@ -64,6 +69,7 @@ export async function runSavedSearch(
       newListings: saved,
       skippedDuplicates: skipped,
       newListingIds,
+      diagnostics,
     }
   } catch (error) {
     throw new RunSearchError(`Failed to run saved search "${search.name}"`, {
