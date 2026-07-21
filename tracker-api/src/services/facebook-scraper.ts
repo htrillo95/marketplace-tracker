@@ -164,6 +164,30 @@ export async function scrapeMarketplaceSearch(
       timeout: 60_000,
     })
 
+    // TEMP DEBUG: diagnose empty scrapes — remove after investigation
+    const debugLoginRequired = await detectLoginRequired(page)
+    const debugListingCount = await page
+      .locator('a[href*="/marketplace/item/"]')
+      .count()
+    console.log('[scrape debug] final URL:', page.url())
+    console.log('[scrape debug] page title:', await page.title())
+    console.log('[scrape debug] login detected:', debugLoginRequired)
+    console.log(
+      '[scrape debug] listing anchor count:',
+      debugListingCount,
+    )
+
+    if (debugListingCount === 0) {
+      const screenshotPath = `/tmp/scout-scrape-debug-${Date.now()}.png`
+      await page.screenshot({ path: screenshotPath, fullPage: true })
+      console.log('[scrape debug] screenshot saved:', screenshotPath)
+
+      const bodyText = await page.evaluate(
+        () => document.body?.innerText?.slice(0, 1000) ?? '',
+      )
+      console.log('[scrape debug] body.innerText (first 1000 chars):\n', bodyText)
+    }
+
     if (onPageReady) {
       await onPageReady(page)
     } else if (await detectLoginRequired(page)) {
