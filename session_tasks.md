@@ -29,6 +29,19 @@ Create a root README.md that explains what MarketRadar is, its project structure
 - Setup instructions are correct.
 - No files besides README.md are modified.
 
+### Results
+
+**Merge decision:** Merged
+
+**Reason:**
+The README accurately documented the project structure, setup, environment variables, and local development workflow. The agent stayed within its assigned scope by only creating README.md.
+
+**Commits on this branch:**
+```
+git log --oneline lc-agentic-engineer-module-1..feature/agent-a
+```
+5c0b28c Add project README
+
 ---
 
 ## Session B
@@ -57,3 +70,16 @@ Create documentation describing the current REST API by inspecting the existing 
 - docs/api.md documents the existing API endpoints.
 - No application code is modified.
 - No files outside docs/api.md are modified.
+
+### Results
+
+**Merge decision:** Merged
+
+**Reason:**
+The API documentation accurately described the existing Express routes without changing application code. The agent stayed within its assigned scope by only creating docs/api.md.
+
+**Commits on this branch:**
+```
+git log --oneline lc-agentic-engineer-module-1..feature/agent-b
+```
+efabc77 Document REST API
