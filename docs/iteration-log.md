@@ -86,3 +86,34 @@ The revised prompt produced a more structured response by organizing the output 
 
 Changes made:
 Updated the prompt to require structured output with the sections Status, Command Run, Errors Found, and Recommendation.
+
+
+## Run 002
+
+Prompt:
+Run the tracker-client linter and summarize the results without modifying any project files.
+
+Status:
+PASS
+
+Command:
+npm run lint
+
+Cycle Time:
+~1 minute
+
+Review Latency:
+~0 minutes
+
+Cost:
+$0.2291
+
+Tokens:
+- Sonnet 5
+  - 520 input
+  - 2.2k output
+
+Observations:
+- node_modules had to be installed because the container did not have dependencies.
+- Found 7 lint errors (3 React Hooks + 4 React Refresh).
+- Output format was much easier to review than the previous run.
