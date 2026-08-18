@@ -39,7 +39,50 @@ Observations:
 The workflow completed successfully and followed every instruction. The agent used the existing lint command, summarized the errors accurately, and did not modify any project files. The output was already useful, so only a small prompt refinement should be needed for the second run.
 
 Changes made:
-None. Baseline run.# Iteration Log
+None. Baseline run.
 
-| Run | Date | Agent | Prompt | Cycle Time | Rubric Scores | Pass/Fail | Review Latency | Cost | Observations |
-|------|------|-------|--------|------------|----------------|-----------|----------------|------|--------------|
+## Run 002 — August 18, 2026
+
+Task:
+Run the tracker-client linter and summarize the results without modifying any project files.
+
+Agent:
+Claude Code (Sonnet 5)
+
+Prompt:
+Run the tracker-client linter and summarize the results without modifying any project files.
+
+- Use the project's existing lint command.
+- Format the response with these sections:
+  - Status
+  - Command Run
+  - Errors Found
+  - Recommendation
+- Include all significant warnings and errors.
+- Do not modify any project files.
+
+Rubric Scores
+
+| Dimension | Score | Notes |
+|-----------|------:|-------|
+| Command Execution | 4 | Ran the correct lint command and made no file changes. |
+| Result Accuracy | 4 | Correctly reported the lint results and grouped the issues. |
+| Recommendation Quality | 4 | Recommendation was clearer and more actionable than the baseline run. |
+
+Measurements
+
+- Cycle time: ~30 seconds
+- Review latency: ~0 minutes
+- Cost per run: $0.1503
+- Tokens:
+  - Sonnet 5: 512 input / 985 output
+  - Haiku 4.5: 582 input / 18 output
+
+Pass/Fail:
+PASS
+
+Observations:
+The revised prompt produced a more structured response by organizing the output into clearly labeled sections. The lint results remained the same, but the formatting made the response easier to review.
+
+Changes made:
+Updated the prompt to require structured output with the sections Status, Command Run, Errors Found, and Recommendation.
