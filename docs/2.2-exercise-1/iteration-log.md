@@ -145,3 +145,10 @@ None observed. The one judgment call worth flagging is splitting Phase 1's combi
 ## What I'd Change Next Time
 
 I'd write a structured findings artifact (e.g., a table or JSON file) right after Phase 1 instead of relying on the raw file reads sitting in conversation context. That would make the cross-phase carry-over depend on a durable file rather than on the conversation history staying intact, which matters more as sessions get longer or get compacted.
+
+## Commit Evidence
+
+- Pre-session plan commit: `83aacd00b1517bd9935ee1d03456eb90ca05ac0a` — "Add 2.2 exercise 1 pre-session plan"
+- Context-management technique plan commit: `3c39aeeeb677184eaffedc7f10345f7241a5fbda` — "Add 2.2 exercise 1 context management plan"
+- Agent definition commit: `00007146ec86e7aadd385cf4bdb33370568c6329` — "Add 2.2 exercise 1 code quality reviewer agent"
+- Managed session artifacts commit: `3fb9a7d455608a2eba77632703148b87821c6b4a` — "Complete 2.2 exercise 1 managed context session"
