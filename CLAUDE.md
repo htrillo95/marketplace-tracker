@@ -39,3 +39,15 @@ Claude should retrieve only the reference documents relevant to the current task
 ### Knowledge File Permission Policy
 
 Never modify file permissions in `.memory/knowledge/` without explicit human instruction. If a write fails because the knowledge directory is read-only, stop and ask the human rather than changing permissions.
+
+### Required Session Startup
+
+Before responding to the user's first task in every new Claude Code session:
+
+1. Read `.memory/SCOPE.md` and verify it matches the current repository.
+2. Read `.memory/project/MEMORY_INDEX.md`.
+3. Read every active Project Memory entry listed in the index.
+4. Read active Knowledge Files listed in the index.
+5. Complete these memory reads before responding to the user's request.
+
+Do not wait for the user to explicitly ask you to load project memory.
