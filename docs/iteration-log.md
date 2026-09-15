@@ -1,119 +1,71 @@
-## Run 001 — August 18, 2026
+# Code Reviewer Iteration Log
 
-Task:
-Run the tracker-client linter and summarize the results without modifying any files.
+## Run 1
 
-Agent:
-Claude Code (Sonnet 5)
+### Run Metadata
+- Agent: code-reviewer v0.1.0
+- Target: commit 1519708
+- Result: FAIL
 
-Prompt:
-Run the tracker-client linter and summarize the results without modifying any files.
+### Rubric Scores
+- Issue Accuracy: 4/4
+- Issue Coverage: 4/4
+- Output Format: 4/4
+- Scope and Autonomy: 4/4
+- Conciseness: 2/4
+- Total: 18/20
 
-- Use the project's existing lint command.
-- Report whether linting passed or failed.
-- Include all significant warnings and errors.
-- Recommend the next step based on the result.
-- Do not modify any project files.
+### Measurements
+- Cycle time: 4m 48s
+- Review latency: 1m 37s
+- Cost: Not recorded
+- Input/output tokens: Not recorded
 
-Rubric Scores
+### Misfires
+- The review was too long for the task. It produced eight findings with lengthy explanations even when several lower-severity findings could have been summarized more briefly.
 
-| Dimension | Score | Notes |
-|-----------|------:|------|
-| Command Execution | 4 | Ran the correct lint command and made no file changes. |
-| Result Accuracy | 4 | Correctly summarized the lint output and identified all reported issues. |
-| Recommendation Quality | 4 | Recommendation was consistent with the lint results and provided an appropriate next step. |
+### Proposed Fix
+- Add an explicit output limit requiring the agent to prioritize the most important findings and keep each finding concise.
 
-Measurements
-
-- Cycle time: ~30 seconds
-- Review latency: ~0 minutes
-- Cost per run: $0.1460
-- Tokens:
-  - Sonnet 5: 512 input / 786 output
-  - Haiku 4.5: 582 input / 18 output
-
-Pass/Fail:
-PASS
-
-Observations:
-The workflow completed successfully and followed every instruction. The agent used the existing lint command, summarized the errors accurately, and did not modify any project files. The output was already useful, so only a small prompt refinement should be needed for the second run.
-
-Changes made:
-None. Baseline run.
-
-## Run 002 — August 18, 2026
-
-Task:
-Run the tracker-client linter and summarize the results without modifying any project files.
-
-Agent:
-Claude Code (Sonnet 5)
-
-Prompt:
-Run the tracker-client linter and summarize the results without modifying any project files.
-
-- Use the project's existing lint command.
-- Format the response with these sections:
-  - Status
-  - Command Run
-  - Errors Found
-  - Recommendation
-- Include all significant warnings and errors.
-- Do not modify any project files.
-
-Rubric Scores
-
-| Dimension | Score | Notes |
-|-----------|------:|-------|
-| Command Execution | 4 | Ran the correct lint command and made no file changes. |
-| Result Accuracy | 4 | Correctly reported the lint results and grouped the issues. |
-| Recommendation Quality | 4 | Recommendation was clearer and more actionable than the baseline run. |
-
-Measurements
-
-- Cycle time: ~30 seconds
-- Review latency: ~0 minutes
-- Cost per run: $0.1503
-- Tokens:
-  - Sonnet 5: 512 input / 985 output
-  - Haiku 4.5: 582 input / 18 output
-
-Pass/Fail:
-PASS
-
-Observations:
-The revised prompt produced a more structured response by organizing the output into clearly labeled sections. The lint results remained the same, but the formatting made the response easier to review.
-
-Changes made:
-Updated the prompt to require structured output with the sections Status, Command Run, Errors Found, and Recommendation.
+### Changes Made
+- Added a 5-finding maximum and required brief findings.
+- Bumped the agent version to v0.1.1.
+- Agent definition commit: ece7f9f
 
 
-## Run 002
 
-Prompt:
-Run the tracker-client linter and summarize the results without modifying any project files.
+## Run 2
 
-Status:
-PASS
+### Run Metadata
+- Agent: code-reviewer v0.1.1
+- Target: commit 1519708
+- Agent definition commit: ece7f9f
+- Result: PASS
 
-Command:
-npm run lint
+### Rubric Scores
+- Issue Accuracy: 4/4
+- Issue Coverage: 4/4
+- Output Format: 4/4
+- Scope and Autonomy: 4/4
+- Conciseness: 4/4
+- Total: 20/20
 
-Cycle Time:
-~1 minute
+### Measurements
+- Cycle time: 1m 53s
+- Review latency: 1m 40s
+- Cost: Not recorded
+- Input/output tokens: Not recorded
 
-Review Latency:
-~0 minutes
+### Misfires
+- No major misfire observed. The review stayed focused while still identifying the highest-priority security issue.
 
-Cost:
-$0.2291
+### Changes Made
+- Updated the agent from v0.1.0 to v0.1.1.
+- Limited reviews to a maximum of 5 prioritized findings and required each finding to stay brief.
 
-Tokens:
-- Sonnet 5
-  - 520 input
-  - 2.2k output
-
-Observations:
-- node_modules had to be installed because the container did not have dependencies.
-- Found 7 lint errors (3 React Hooks + 4 React Refresh).
-- Output format was much easier to review than the previous run.
+## Run Comparison
+- Rubric score improved from 18/20 to 20/20.
+- Conciseness improved from 2/4 to 4/4.
+- Findings decreased from 8 to 5 while the main security issue was still identified.
+- Cycle time decreased from 4m 48s to 1m 53s.
+- No obvious regression was observed in issue accuracy, coverage, formatting, or scope.
