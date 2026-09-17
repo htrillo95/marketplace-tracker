@@ -30,6 +30,9 @@ export async function saveNewListings(
         data: {
           ...listing,
           savedSearchId: savedSearchId ?? null,
+          priceObservations: listing.price
+            ? { create: { price: listing.price } }
+            : undefined,
         },
       })
       newListingIds.push(created.id)
@@ -42,6 +45,7 @@ export async function saveNewListings(
         error.code === 'P2002'
       ) {
         skipped++
+        await recordPriceChangeIfAny(listing)
       } else {
         throw error
       }
@@ -49,4 +53,31 @@ export async function saveNewListings(
   }
 
   return { saved, skipped, newListingIds }
+}
+
+// A re-scraped listing (matched by listingUrl) never overwrites history: the
+// existing PriceObservation rows stay untouched, and a rescan only appends a
+// new one when the price actually differs from the last-known price.
+async function recordPriceChangeIfAny(listing: ListingInput): Promise<void> {
+  if (!listing.price) {
+    return
+  }
+
+  const existing = await prisma.listing.findUnique({
+    where: { listingUrl: listing.listingUrl },
+  })
+
+  if (!existing || existing.price === listing.price) {
+    return
+  }
+
+  await prisma.$transaction([
+    prisma.listing.update({
+      where: { id: existing.id },
+      data: { price: listing.price },
+    }),
+    prisma.priceObservation.create({
+      data: { listingId: existing.id, price: listing.price },
+    }),
+  ])
 }

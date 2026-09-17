@@ -35,5 +35,16 @@ model Listing {
   savedSearchId String?  @db.Uuid
   seenAt        DateTime @default(now())
 
-  // TODO: Add price history so we can detect and highlight price drops.
+  priceObservations PriceObservation[]
+}
+
+model PriceObservation {
+  id          String   @id @default(uuid()) @db.Uuid
+  listingId   String   @db.Uuid
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  price       String
+  priceAmount Int?
+  observedAt  DateTime @default(now())
+
+  @@index([listingId, observedAt])
 }
