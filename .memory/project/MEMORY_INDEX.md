@@ -10,6 +10,10 @@ Last updated: 2026-09-15
 
 - `../knowledge/coding-standards.md` — Coding standards for MarketRadar, including reusable backend logic, security, validation, error handling, and preservation of historical data. Human-maintained, read-only. Last reviewed 2026-09-15.
 
+## Reference layer
+
+- `../reference/REFERENCE_INDEX.md` — Index of longer historical, design, and investigation documents retrieved on demand. Currently empty; no reference documents exist yet. Human-maintained, read-only. Check this index before assuming background material exists elsewhere.
+
 ## Archived entries
 
 (none yet)

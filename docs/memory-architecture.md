@@ -4,6 +4,17 @@
 
 This workflow supports an agent that helps maintain and develop MarketRadar, a marketplace tracking application, across many separate sessions rather than a single continuous conversation. Because architectural context and project state don't persist between sessions on their own, the agent needs to remember important architectural decisions, the current state of in-progress and completed features, unresolved issues, work that has been deliberately deferred, and standing project priorities, so that each new session can pick up where the last one left off instead of rediscovering context from scratch. It does not need to memorize anything already clearly represented by the source code, tests, configuration, or existing documentation, since that information is authoritative and always available by inspection. It must never store credentials, authentication tokens, scraped user or private data, or transient debugging details, since these are either sensitive or too ephemeral to be useful in future sessions. Finally, because MarketRadar is intended to eventually support both web and iOS/mobile clients, any remembered backend or API decisions should be framed in a way that keeps them reusable across clients rather than coupled to the web frontend alone.
 
+### What kind of information is this?
+
+Before storing anything, classify it against these six categories:
+
+- **Persistent project memory** — project-specific state that changes over time: feature status, decisions tied to specific work, deferred tasks, known blockers. Lives in `.memory/project/`, agent-writable.
+- **Human-maintained knowledge** — stable rules that apply to every session regardless of what feature is in progress: coding standards, architectural constraints, security rules. Lives in `.memory/knowledge/`, human-owned and read-only to the agent.
+- **Skills/procedures** — repeatable step-by-step actions (how to run builds, tests, or deployments). These are not memory at all; they belong in skills, not in any `.memory/` layer.
+- **Temporary session details** — in-progress reasoning, individual debugging output, one-off scrape results. Never persisted anywhere; useful only for the current session and stale immediately after.
+- **Repository-preserved information** — anything already authoritative in source code, tests, configuration, or existing documentation. Never duplicated into memory; read from the repository instead.
+- **Secrets/sensitive information** — credentials, tokens, cookies, database URLs, scraped personal data. Never stored in any memory layer under any circumstance.
+
 ## Layer 1: Project memory directory
 
 ### Belongs here
@@ -43,6 +54,10 @@ This workflow supports an agent that helps maintain and develop MarketRadar, a m
 - Pruning policy: Review every 90 days or whenever major architecture, tooling, or project standards change. Replace outdated rules rather than keeping conflicting versions active.
 
 ## Layer 3: Indexed reference documents
+
+### Current status
+
+This layer is currently empty — MarketRadar has no indexed reference documents yet. It should stay empty until a document becomes large enough, or infrequent enough in need, that loading it into every session would waste context. Adding a document here is justified once, for example, a pull request description needs to be preserved after merge to explain a past change, a feature accumulates a design write-up too long for project memory, or a technical investigation (such as scraping approach notes) produces findings worth keeping but not worth re-reading every session. See `.memory/reference/REFERENCE_INDEX.md` for the current index and retrieval rule.
 
 ### Belongs here
 - Historical pull request descriptions that explain why major MarketRadar changes were made.
