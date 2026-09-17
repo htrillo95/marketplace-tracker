@@ -69,3 +69,35 @@
 - Findings decreased from 8 to 5 while the main security issue was still identified.
 - Cycle time decreased from 4m 48s to 1m 53s.
 - No obvious regression was observed in issue accuracy, coverage, formatting, or scope.
+
+## 2.3 Exercise 1 — Build and Verify Persistent Memory
+
+### Run Metadata
+- Exercise: 2.3 Exercise 1 — Build and Verify Persistent Memory
+- Agent: Claude Code v2.1.220 / Sonnet 5
+- Memory system commit: 839db89
+- Session state: fresh Claude session started normally with no `--resume` or `--continue` and no memory contents pasted into the prompt
+
+### Verification 1 — Startup-Memory Check
+- Result: PASS
+- Agent discovered both project-memory decisions.
+- Agent discovered coding-standards.md.
+- Agent correctly found that the reference index currently contains no reference documents.
+- Agent correctly distinguished changing project memory from stable human-maintained knowledge.
+- Agent correctly identified write/ownership policies.
+- No files were modified.
+
+### Verification 2 — Task-Resumption Check
+- Result: PASS
+- Agent inspected the current repository and working tree.
+- Correctly identified the prepared but uncommitted PriceObservation schema and migration.
+- Correctly identified that no PriceObservation application/write path exists yet.
+- Applied decision-001's append-only requirement.
+- Recognized decision-002 as planned rather than implemented.
+- Applied relevant coding standards.
+- Recommended implementing the price-observation write path as the next development action.
+- No files were modified.
+
+### Outcome
+- Both fresh-session verification checks passed.
+- No memory-system revisions were required after testing.
