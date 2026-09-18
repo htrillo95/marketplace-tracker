@@ -14,6 +14,10 @@ Last updated: 2026-09-17
 
 - `decisions/decision-005.md` — Records that listings without a usable price are not given a PriceObservation until a real price is observed. Recorded 2026-09-17. Review by 2026-12-16.
 
+- `decisions/decision-bad.md` — API connection
+  approach using service account. Recorded 2026-09-17.
+  Review by 2026-12-16.
+
 - `../knowledge/coding-standards.md` — Coding standards for MarketRadar, including reusable backend logic, security, validation, error handling, and preservation of historical data. Human-maintained, read-only. Last reviewed 2026-09-15.
 
 ## Reference layer
