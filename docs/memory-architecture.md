@@ -15,6 +15,21 @@ Before storing anything, classify it against these six categories:
 - **Repository-preserved information** — anything already authoritative in source code, tests, configuration, or existing documentation. Never duplicated into memory; read from the repository instead.
 - **Secrets/sensitive information** — credentials, tokens, cookies, database URLs, scraped personal data. Never stored in any memory layer under any circumstance.
 
+## Data Classification
+
+Before writing anything to a memory file, classify it:
+
+- **Public** — Safe to commit to the repo and share broadly. Most project decisions and coding standards fall here.
+- **Internal** — Safe within the team but not for public repos. Store in a non-committed volume or .gitignore the containing folder.
+- **Confidential** — Sensitive business data. Do not store in agent memory. Retrieve from secure systems on demand.
+- **Secret** — Credentials, tokens, API keys, PII. Must never appear in any memory file. If the agent encounters a secret during a run, use it for the immediate task only and explicitly do not write it to any memory layer. Reference the environment variable name instead.
+
+### Guardrails
+
+A pre-commit hook at .git/hooks/pre-commit scans .memory/ for common credential patterns before each commit. If a pattern is found, the commit is blocked.
+
+This hook is local to this Git clone only — it lives under `.git/`, which Git never tracks or transmits, so it is not committed with the repository and will not be present in a fresh clone unless it is reinstalled there.
+
 ## Layer 1: Project memory directory
 
 ### Belongs here

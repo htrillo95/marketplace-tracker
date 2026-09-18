@@ -146,3 +146,27 @@
 
 ### Notes
 - The temporary project-b directory is outside the MarketRadar repository and must not be committed.
+
+## Module 2.4 / Sensitive Data — Failure-Mode Test
+
+### Run Metadata
+- Failure mode: Sensitive Data
+- Test date: 2026-09-17
+
+### Induced Failure
+- A controlled fake credential was deliberately placed in `decision-bad.md` and indexed.
+- The existing CLAUDE.md soft guard initially refused the write/index operation; it was explicitly overridden only for this controlled exercise.
+
+### Observed Result
+- The fake credential was committed and `grep` confirmed it existed in persistent memory and in Git history.
+
+### Remediation
+- Removed the credential and replaced the bad entry with `decision-006.md`, which references only `ANTHROPIC_API_KEY` by environment-variable name.
+- A follow-up scan of current `.memory` files found no credential-value patterns.
+- Added a local executable `.git/hooks/pre-commit` hard stop.
+- The hook was tested with `password=test123` and correctly blocked the commit.
+- The temporary `test-secret.txt` was removed afterward.
+
+### Notes
+- Correcting the current file does not erase the earlier fake value from Git history.
+- In a real credential incident, the credential would need to be revoked/replaced and repository history or affected clones treated as compromised as appropriate.

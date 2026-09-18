@@ -36,6 +36,16 @@ Claude should retrieve only the reference documents relevant to the current task
 - Never store credentials, authentication tokens, cookies, secrets, personal data, or transient debugging output in memory.
 - Claude may write to project memory but must not write to `.memory/knowledge/` or `.memory/reference/`.
 
+### Data Classification Before Writing
+
+Before writing anything to any memory layer, classify it first:
+
+- Public: may be written to appropriate memory.
+- Internal: only store in a non-committed location.
+- Confidential: do not write to agent memory; retrieve from the secure source when needed.
+- Secret: never write to any memory layer. Use only for the immediate task and reference environment-variable names instead of values.
+- If a secret is already found in memory, flag it and stop until a human removes/remediates it.
+
 ### Knowledge File Permission Policy
 
 Never modify file permissions in `.memory/knowledge/` without explicit human instruction. If a write fails because the knowledge directory is read-only, stop and ask the human rather than changing permissions.
