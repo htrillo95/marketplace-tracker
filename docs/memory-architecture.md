@@ -1,5 +1,7 @@
 # Memory Architecture
 
+> Reconciled after Module 2.4 failure-mode testing (stale memory, scope leak, and sensitive-data override exercises). See "Safeguards and Failure-Mode Testing" below for what was tested and observed.
+
 ## What this workflow needs to remember
 
 This workflow supports an agent that helps maintain and develop MarketRadar, a marketplace tracking application, across many separate sessions rather than a single continuous conversation. Because architectural context and project state don't persist between sessions on their own, the agent needs to remember important architectural decisions, the current state of in-progress and completed features, unresolved issues, work that has been deliberately deferred, and standing project priorities, so that each new session can pick up where the last one left off instead of rediscovering context from scratch. It does not need to memorize anything already clearly represented by the source code, tests, configuration, or existing documentation, since that information is authoritative and always available by inspection. It must never store credentials, authentication tokens, scraped user or private data, or transient debugging details, since these are either sensitive or too ephemeral to be useful in future sessions. Finally, because MarketRadar is intended to eventually support both web and iOS/mobile clients, any remembered backend or API decisions should be framed in a way that keeps them reusable across clients rather than coupled to the web frontend alone.
@@ -15,20 +17,42 @@ Before storing anything, classify it against these six categories:
 - **Repository-preserved information** — anything already authoritative in source code, tests, configuration, or existing documentation. Never duplicated into memory; read from the repository instead.
 - **Secrets/sensitive information** — credentials, tokens, cookies, database URLs, scraped personal data. Never stored in any memory layer under any circumstance.
 
-## Data Classification
+## Safeguards and Failure-Mode Testing (Module 2.4)
+
+This memory system relies on two fundamentally different kinds of protection, and the two must not be confused:
+
+- **Soft guards** — the stale-memory, scope-verification, data-classification, and credential-handling rules below are all written as policy in `CLAUDE.md`. They only take effect if the agent reads and follows them. Being instructions rather than mechanisms, they can be bypassed — either because the agent misjudges a situation, or because a human deliberately tells the agent to proceed anyway.
+- **Hard stop** — the Git pre-commit hook at `.git/hooks/pre-commit` is enforced mechanically by Git itself. When a commit touching `.memory/` matches a credential pattern, Git refuses the commit outright, regardless of what CLAUDE.md says or what the agent decides. It does not depend on the agent's judgment or compliance.
+- The pre-commit hook is **local to this Git clone only**. It lives under `.git/`, which Git never tracks, diffs, or transmits as part of the repository. It was not added by a commit and does not appear in `git log` or `git show`; it will not exist in a fresh clone unless a human (or an out-of-band setup step) installs it there again.
+
+Module 2.4 deliberately exercised each safeguard below to confirm which category it falls into and whether it actually holds.
+
+### 1. Stale-memory policy (soft guard — CLAUDE.md)
+
+CLAUDE.md requires the agent to treat stale or conflicting memory as needing review rather than silently relying on it. **Test:** an intentionally expired and contradictory decision entry was introduced into project memory. **Result: passed.** The agent detected that the entry was expired and contradicted current state, and did not apply it. Because the existing policy already caught this case, no change to CLAUDE.md's stale-memory language was required.
+
+### 2. Scope verification (soft guard — CLAUDE.md + `.memory/SCOPE.md`)
+
+CLAUDE.md requires the agent to read `.memory/SCOPE.md` at session start and verify it matches the current project before using project memory. **Test:** memory belonging to a different project ("project-b") was deliberately mounted into the MarketRadar workspace. **Result: passed.** The agent detected the mismatch between `.memory/SCOPE.md` and the actual repository and stopped before applying the other project's memory to MarketRadar. The existing safeguard held without changes.
+
+### 3. Data classification (soft guard — CLAUDE.md)
 
 Before writing anything to a memory file, classify it:
 
 - **Public** — Safe to commit to the repo and share broadly. Most project decisions and coding standards fall here.
 - **Internal** — Safe within the team but not for public repos. Store in a non-committed volume or .gitignore the containing folder.
 - **Confidential** — Sensitive business data. Do not store in agent memory. Retrieve from secure systems on demand.
-- **Secret** — Credentials, tokens, API keys, PII. Must never appear in any memory file. If the agent encounters a secret during a run, use it for the immediate task only and explicitly do not write it to any memory layer. Reference the environment variable name instead.
+- **Secret** — Credentials, tokens, API keys, PII. Must never appear in any memory file under any circumstance.
 
-### Guardrails
+**Test:** a fake credential was presented for storage. **Result:** the classification policy initially worked as intended — the agent classified it as Secret and refused to write it. It was then deliberately overridden by a human for this controlled exercise, and the fake credential was written into a memory file anyway. This is the expected limit of a soft guard: it stops good-faith mistakes, not a human directing the agent to override it. The override is what motivated safeguard 5 below.
 
-A pre-commit hook at .git/hooks/pre-commit scans .memory/ for common credential patterns before each commit. If a pattern is found, the commit is blocked.
+### 4. Credential handling (soft guard — CLAUDE.md, backed by safeguard 5)
 
-This hook is local to this Git clone only — it lives under `.git/`, which Git never tracks or transmits, so it is not committed with the repository and will not be present in a fresh clone unless it is reinstalled there.
+Credentials are always Secret-classified: never store the value, never write it "temporarily," and reference only the environment-variable name that holds it. `decisions/decision-006.md` follows this pattern — it records that the data API uses a service account and that the key lives in an environment variable, without ever recording the key itself. After the Module 2.4 override in safeguard 3, the fake credential was removed and replaced with an environment-variable reference, matching this rule.
+
+### 5. Pre-commit credential hook (hard stop — `.git/hooks/pre-commit`)
+
+Because safeguard 3 showed that a policy-only guard can be overridden, a Git pre-commit hook was added as a mechanical backstop. It scans staged content under `.memory/` for common credential patterns (`sk-`, `password=`, `secret=`, `token=`, `api_key=`, `apikey=`, case-insensitive) before every commit and exits non-zero — blocking the commit — if a match is found. **Test:** a commit containing `password=test123` inside `.memory/` was attempted. **Result: passed.** Git refused the commit. Unlike safeguards 1–4, this does not depend on the agent choosing to comply; it is enforced by Git itself at commit time, which is why it is classified as a hard stop rather than a policy.
 
 ## Layer 1: Project memory directory
 
@@ -98,12 +122,14 @@ This layer is currently empty — MarketRadar has no indexed reference documents
 | Current price-drop tracking feature status | Project memory directory | Active feature state that changes frequently between sessions. |
 | Decision to preserve full price history with PriceObservation | Project memory directory | Project-specific architectural decision, not yet reflected everywhere in code. |
 | Future iOS/mobile client architectural intent | Project memory directory | Forward-looking project priority that shapes current decisions. |
+| Memory scope declaration (SCOPE.md) | Project memory (read-only to agent) | Identifies which project owns the mounted memory and prevents cross-project use. |
 | TypeScript coding standards | Knowledge files | Stable, project-wide convention that applies to every session. |
 | Backend/API rules for reusable business logic | Knowledge files | Durable architectural rule, not tied to a specific feature or moment. |
 | Security rule prohibiting credentials and secrets | Knowledge files | Standing rule that must always be enforced, never situational. |
 | Historical scraping investigation notes | Indexed reference documents | Useful background, but too long and infrequently needed to load every session. |
 | Long architecture/design documents | Indexed reference documents | Detailed reference material retrieved on demand rather than kept in active context. |
 | Credentials, tokens, cookies, and secrets | Do not store | Sensitive data must never be persisted in agent memory. |
+| Credential location | Project memory | Records only the access method/environment-variable name, never the credential value. |
 | Temporary scrape/debugging output | Do not store | Session-specific noise that becomes stale immediately. |
 
 ## Alternatives considered
