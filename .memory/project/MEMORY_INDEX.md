@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 - `decisions/decision-003.md` — Records that Listing.price is a mutable current-price snapshot while PriceObservation rows are the append-only historical record. Recorded 2026-09-17. Review by 2026-12-16.
 
-- `decisions/decision-004.md` — Records that a PriceObservation is only created when a rescan finds a changed price, not on every rescan. Recorded 2026-09-17. Review by 2026-12-16.
+- `decisions/decision-004.md` — Records that a PriceObservation is only created when a rescan finds a changed price, not on every rescan. Recorded 2026-09-17. Review by 2026-12-17.
 
 - `decisions/decision-005.md` — Records that listings without a usable price are not given a PriceObservation until a real price is observed. Recorded 2026-09-17. Review by 2026-12-16.
 

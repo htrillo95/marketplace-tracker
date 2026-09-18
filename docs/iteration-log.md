@@ -101,3 +101,26 @@
 ### Outcome
 - Both fresh-session verification checks passed.
 - No memory-system revisions were required after testing.
+
+## Module 2.4 / Stale Memory — Failure-Mode Test
+
+### Run Metadata
+- Failure mode: Stale Memory
+- Test date: 2026-09-17
+- Entry tested: `.memory/project/decisions/decision-004.md`
+
+### Induced Failure
+- Deliberately changed the decision to state that a PriceObservation should be recorded on every rescan (contradicting its own title/rationale and the actual code).
+- Deliberately changed the review date to 2026-07-01 (expired).
+
+### Observed Result
+- Outcome 1 (PASS). In a fresh session, Claude detected the expired review date and the contradiction with the current code in `tracker-api/src/store/listings.ts`, and asked for human confirmation before proceeding.
+
+### CLAUDE.md Change Required
+- No. The existing stale memory safeguard worked as intended.
+
+### Remediation
+- `decision-004.md` was restored to the current correct behavior (PriceObservation recorded only when price differs from the currently stored price) and its review date was updated to 2026-12-17.
+
+### Verification
+- The corrected decision matches the current implementation in `tracker-api/src/store/listings.ts`.
