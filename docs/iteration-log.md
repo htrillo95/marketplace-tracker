@@ -124,3 +124,25 @@
 
 ### Verification
 - The corrected decision matches the current implementation in `tracker-api/src/store/listings.ts`.
+
+## Module 2.4 / Scope Leak — Failure-Mode Test
+
+### Run Metadata
+- Failure mode: Scope Leak
+- Test date: 2026-09-17
+
+### Test Setup
+- MarketRadar remained mounted at `/workspace`, but project-b's `.memory` directory was deliberately mounted at `/workspace/.memory`.
+- project-b's `.memory` contained its own `SCOPE.md`, `MEMORY_INDEX.md`, and a contradictory price-observation decision.
+
+### Observed Result
+- Wrong-mount result: PASS. In a fresh session, Claude detected that `SCOPE.md` belonged to project-b, stopped, and did not read or apply project-b's memory.
+
+### CLAUDE.md Change Required
+- No. The existing scope verification safeguard worked as intended.
+
+### Correct-Mount Verification
+- After restarting normally with MarketRadar's own memory, a fresh Claude session verified the MarketRadar scope and correctly loaded decisions 001 through 005.
+
+### Notes
+- The temporary project-b directory is outside the MarketRadar repository and must not be committed.
