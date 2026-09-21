@@ -1,12 +1,12 @@
 # Project Memory Index
 
-Last updated: 2026-09-17
+Last updated: 2026-09-21
 
 ## Active entries
 
 - `decisions/decision-001.md` — Records the decision to preserve listing price history using append-only PriceObservation records rather than overwriting previous prices. Recorded 2026-09-15. Review by 2026-12-14.
 
-- `decisions/decision-002.md` — Records the decision to organize test files in a separate `/tests` directory rather than alongside source files. Recorded 2026-09-15. Review by 2026-12-14.
+- `decisions/decision-002.md` — Records the decision to organize test files in a separate `/tests` directory rather than alongside source files. Implemented 2026-09-21 for `tracker-api` using Vitest, with Prisma-backed store tests mocking the shared Prisma module. Recorded 2026-09-15. Review by 2026-12-14.
 
 - `decisions/decision-003.md` — Records that Listing.price is a mutable current-price snapshot while PriceObservation rows are the append-only historical record. Recorded 2026-09-17. Review by 2026-12-16.
 

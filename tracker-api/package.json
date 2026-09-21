@@ -11,7 +11,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "facebook:poc": "tsx src/scripts/facebook-poc.ts",
-    "facebook:auth": "tsx src/scripts/facebook-auth.ts"
+    "facebook:auth": "tsx src/scripts/facebook-auth.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -23,6 +24,7 @@
     "@types/node": "^24.13.2",
     "prisma": "^6.19.3",
     "tsx": "^4.20.3",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.7"
   }
 }
