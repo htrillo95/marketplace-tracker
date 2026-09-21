@@ -208,3 +208,26 @@
 
 ### Remaining Limitation
 - `.git/hooks/pre-commit` is local to this clone and is not automatically distributed through Git. A production/team system would need a shared/enforced mechanism such as CI or a repository-managed hook setup (e.g. `core.hooksPath` checked into the repo, or an equivalent CI check) to guarantee the same protection for every contributor.
+
+## Module 2 Final Lab — Track 1
+
+### Run Metadata
+- Track chosen: Track 1 — strengthen project memory while using Claude Code for real development work.
+
+### Work Completed
+- Added Vitest 3.2.7 and the first `tracker-api` test setup.
+- Added three regression tests for the existing price-rescan behavior:
+  - Unchanged price creates no observation.
+  - Changed price updates the listing and creates an observation.
+  - Missing price creates no observation.
+- All 3 tests passed.
+- TypeScript check and build passed.
+- Updated `decision-002.md` from Planned to Active/Implemented with the testing approach.
+- Updated `MEMORY_INDEX.md`.
+
+### Fresh-Session Verification
+- Started a fresh Claude Code session without resuming the previous conversation.
+- The fresh session correctly recovered the testing framework, test location, Prisma mocking approach, and the three tested behaviors from project memory and verified them against the repository.
+
+### Outcome
+- Project memory accurately reflected the implemented testing approach, and a fresh session was able to recover and verify it against the current codebase without prior conversation context.
