@@ -22,6 +22,14 @@ export async function createSearch(input: CreateSearchInput): Promise<Search> {
     throw new Error('Invalid resultsPerSearch')
   }
 
+  if (
+    input.maxPrice !== undefined &&
+    input.maxPrice !== null &&
+    (typeof input.maxPrice !== 'number' || input.maxPrice <= 0)
+  ) {
+    throw new Error('Invalid maxPrice')
+  }
+
   return prisma.savedSearch.create({
     data: {
       name: input.name,
@@ -46,6 +54,14 @@ export async function updateSearch(
     !ALLOWED_RESULTS_PER_SEARCH.includes(input.resultsPerSearch)
   ) {
     throw new Error('Invalid resultsPerSearch')
+  }
+
+  if (
+    input.maxPrice !== undefined &&
+    input.maxPrice !== null &&
+    (typeof input.maxPrice !== 'number' || input.maxPrice <= 0)
+  ) {
+    throw new Error('Invalid maxPrice')
   }
 
   return prisma.savedSearch.update({
