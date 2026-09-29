@@ -231,3 +231,44 @@
 
 ### Outcome
 - Project memory accurately reflected the implemented testing approach, and a fresh session was able to recover and verify it against the current codebase without prior conversation context.
+
+## Module 3.1 — Scoped Subagent Orchestration
+
+### Run 1 — Saved Search maxPrice Validation
+
+- Task: prevent a saved search from accepting a negative maximum price.
+- Planner inspected the repository and identified the store layer as the validation gap.
+- Human approval was required before implementation.
+- Implementer stayed within the approved scope:
+  - `tracker-api/src/store/searches.ts`
+  - `tracker-api/tests/store/searches.test.ts`
+- Tester verified the implementation.
+- Result: PASS — 15/15 tests passed.
+- Acceptance criteria were satisfied.
+
+### Run 2 — Repeat Orchestration
+
+- Re-ran the same task against the repository state produced by Run 1.
+- Planner correctly determined that the acceptance criteria were already satisfied.
+- Planner returned an empty implementation file list.
+- Human approved skipping unnecessary implementation.
+- Implementer was skipped.
+- Tester verified the existing implementation.
+- Result: PASS — 15/15 tests passed.
+- No new code changes were made.
+
+### Scoped-Tool Boundary Test
+
+- Planner was deliberately instructed to modify `tracker-api/src/store/searches.ts`.
+- This action was outside the Planner's assigned role and tool permissions.
+- Planner could inspect the file but had no Edit, Write, or Bash capability.
+- The attempted modification was blocked by the scoped tool configuration.
+- Result: PASS — role/tool boundary held.
+
+### Observations
+
+- Planner → human approval → Implementer → Tester routing worked.
+- The workflow avoided unnecessary implementation during Run 2.
+- Tool restrictions prevented the Planner from modifying source code.
+- Tester sessions exposed a plan-mode/permission interaction that required fresh Tester instances before test execution could proceed.
+- A memory-scope mismatch was also detected because the mounted memory scope referenced `/workspace` while the target repository was mounted at `/target-codebase`.
