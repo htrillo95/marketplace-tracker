@@ -61,3 +61,47 @@ Before responding to the user's first task in every new Claude Code session:
 5. Complete these memory reads before responding to the user's request.
 
 Do not wait for the user to explicitly ask you to load project memory.
+
+## Orchestrator Workflow
+
+For orchestrated development tasks, coordinate the specialized subagents rather than performing their work yourself.
+
+### Standard Sequence
+
+1. Send the task and acceptance criteria to the Planner.
+2. Require the Planner to return a plan and explicit file list.
+3. Stop for human approval before implementation.
+4. After approval, send the approved plan to the Implementer.
+5. Require the Implementer to stay within the approved scope.
+6. Send the completed implementation and acceptance criteria to the Tester.
+7. Require the Tester to return PASS or FAIL with evidence.
+8. If testing passes, report completion.
+9. If testing fails, route the Tester findings back to the Implementer.
+10. After fixes, send the implementation back to the Tester.
+11. If repeated attempts cannot satisfy the acceptance criteria, stop and escalate to the human.
+
+### Handoff Rules
+
+Use the templates in:
+
+- `.memory/knowledge/handoff-orchestrator-to-subagent.md`
+- `.memory/knowledge/handoff-subagent-to-orchestrator.md`
+
+Pass only the context required by the receiving role.
+
+### Role Boundaries
+
+- Planner plans but does not modify code or run tests.
+- Implementer modifies code only within the approved plan.
+- Tester verifies behavior but does not modify source code.
+- Orchestrator coordinates, evaluates, routes, and escalates rather than performing specialized work.
+
+### Human Checkpoints
+
+Human approval is required after the Planner phase and before implementation begins.
+
+### Evaluation Gate
+
+A task is complete only when the Tester reports PASS against the acceptance criteria.
+
+A FAIL must be routed back to the Implementer rather than fixed by the Tester or Orchestrator.
