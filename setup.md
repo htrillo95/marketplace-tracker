@@ -82,3 +82,16 @@ The smoke test proved that Claude Code could safely work inside the container, c
 ### What risks remain?
 
 The container still has network access, so an agent could make outbound requests if prompted. I also need to avoid mounting sensitive folders, secrets, production credentials, or API keys in the project.
+## Module 3 MCP Network
+
+Run the agent container on the `agent-internal` Docker network instead of `--network none`.
+
+The internal bridge allows agents to communicate with MCP servers over localhost while still blocking external internet access.
+
+```bash
+docker network create --internal agent-internal
+docker run --network agent-internal ...
+Then verify exactly what we added:
+
+```bash
+tail -n 15 setup.md
