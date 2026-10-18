@@ -66,8 +66,9 @@ export async function runSavedSearch(
       newListingIds,
     }
   } catch (error) {
-    throw new RunSearchError(`Failed to run saved search "${search.name}"`, {
-      cause: error,
-    })
+    throw new RunSearchError(
+      `Failed to run saved search "${search.name}" (${search.id})`,
+      { cause: error },
+    )
   }
 }

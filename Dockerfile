@@ -18,6 +18,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+# Module 3.2 MCP storage and retrieval dependencies
+RUN pip install --no-cache-dir \
+    fastmcp \
+    mcp \
+    uvicorn \
+    sentence-transformers \
+    sqlite-vec
+
 # Course tooling (no project-local files required)
 RUN npm install -g @anthropic-ai/claude-code
 
