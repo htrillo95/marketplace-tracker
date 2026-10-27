@@ -36,5 +36,12 @@
       "list_entries"
     ],
     "classification_ceiling": "internal"
+  },
+  "project_manager": {
+    "retrieval": [],
+    "storage": [
+      "write_entry"
+    ],
+    "classification_ceiling": "internal"
   }
 }
